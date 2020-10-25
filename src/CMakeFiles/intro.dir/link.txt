@@ -1,0 +1,1 @@
+/usr/bin/c++ -rdynamic CMakeFiles/intro.dir/main.o -o intro   -L/home/zach/work/basic0/cpp_starter_project/src/GuiManager  -lproject_options -lproject_warnings GuiManager/libGuiManager.a -lCONAN_PKG::docopt.cpp -lCONAN_PKG::fmt -lCONAN_PKG::spdlog -lproject_options -lproject_warnings -lCONAN_PKG::imgui-sfml 

@@ -1,0 +1,2 @@
+/usr/bin/ar qc libGuiManager.a CMakeFiles/GuiManager.dir/GuiManager.o
+/usr/bin/ranlib libGuiManager.a

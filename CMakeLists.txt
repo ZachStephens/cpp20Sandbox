@@ -7,7 +7,13 @@ include(cmake/PreventInSourceBuilds.cmake)
 
 # Link this 'library' to set the c++ standard / compile-time options requested
 add_library(project_options INTERFACE)
-target_compile_features(project_options INTERFACE cxx_std_17)
+target_compile_features(project_options INTERFACE cxx_std_20)
+
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_BUILD_TYPE debug)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++20")
+set( CMAKE_VERBOSE_MAKEFILE on )
 
 if(CMAKE_CXX_COMPILER_ID MATCHES ".*Clang")
   option(ENABLE_BUILD_WITH_TIME_TRACE "Enable -ftime-trace to generate time tracing .json files on clang" OFF)
@@ -20,7 +26,7 @@ endif()
 add_library(project_warnings INTERFACE)
 
 # enable cache system
-include(cmake/Cache.cmake)
+#include(cmake/Cache.cmake)
 
 # standard compiler warnings
 include(cmake/CompilerWarnings.cmake)
@@ -38,7 +44,7 @@ enable_doxygen()
 include(cmake/StaticAnalyzers.cmake)
 
 option(BUILD_SHARED_LIBS "Enable compilation of shared libraries" OFF)
-option(ENABLE_TESTING "Enable Test Builds" ON)
+option(ENABLE_TESTING "Enable Test Builds" OFF)
 option(ENABLE_FUZZING "Enable Fuzzing Builds" OFF)
 
 # Very basic PCH example

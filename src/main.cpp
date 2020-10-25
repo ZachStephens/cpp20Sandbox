@@ -2,44 +2,44 @@
 #include <iostream>
 
 #include <spdlog/spdlog.h>
-
-
 #include <docopt/docopt.h>
 
-#include <iostream>
 
-static constexpr auto USAGE =
-  R"(Naval Fate.
+#include "GuiManager/GuiManager.hpp"
+#include "CoreLogicManager/CoreLogicManager.hpp"
+#include "ThreadCommunicator/ThreadCommunicator.hpp"
+#include "GuiManager/Messages/GuiManMessages.hpp"
 
-    Usage:
-          naval_fate ship new <name>...
-          naval_fate ship <name> move <x> <y> [--speed=<kn>]
-          naval_fate ship shoot <x> <y>
-          naval_fate mine (set|remove) <x> <y> [--moored | --drifting]
-          naval_fate (-h | --help)
-          naval_fate --version
- Options:
-          -h --help     Show this screen.
-          --version     Show version.
-          --speed=<kn>  Speed in knots [default: 10].
-          --moored      Moored (anchored) mine.
-          --drifting    Drifting mine.
-)";
+#include <thread>
+#include <memory>
+#include <functional>
 
-int main(int argc, const char **argv)
+
+int main()
 {
-  std::map<std::string, docopt::value> args = docopt::docopt(USAGE,
-    { std::next(argv), std::next(argv, argc) },
-    true,// show help if requested
-    "Naval Fate 2.0");// version string
-
-  for (auto const &arg : args) {
-    std::cout << arg.first << arg.second << std::endl;
-  }
-
 
   //Use the default logger (stdout, multi-threaded, colored)
-  spdlog::info("Hello, {}!", "World");
 
-  fmt::print("Hello, from {}\n", "{fmt}");
+
+  // Instantiate communication object needed to pass messages between gui and core logic
+  auto commMsgConnector = std::make_shared<ThreadCom::ThreadCommunicator<ThreadCom::commMsg>>();
+  auto guiManRequestConnector = std::make_shared<ThreadCom::ThreadCommunicator<gman::guiManRequest>>();
+
+  // Instantiate managers for gui and core logic
+  auto guiMan = std::make_unique<gman::GuiManager>(commMsgConnector, guiManRequestConnector);
+  auto coreLogicMan = std::make_unique<clman::CoreLogicManager>(commMsgConnector, guiManRequestConnector);
+
+  coreLogicMan->configGuiManService(guiMan->mServiceId);
+
+
+  std::jthread threadGui([guiMan = move(guiMan)]() {
+    guiMan->run();
+  });
+
+  std::jthread threadCoreLogic([coreLogicMan = move(coreLogicMan)]() {
+    coreLogicMan->run();
+  });
+
+  fmt::print("Hell000000o, from {}\n", "{fmt}");
+  spdlog::info("Hello, {}!", "World");
 }
