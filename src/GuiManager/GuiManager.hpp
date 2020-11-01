@@ -26,7 +26,7 @@ class GuiManager : public RunnableManager
 {
 
 private:
-  std::map<shapeId_t, std::unique_ptr<sf::Shape>> mShapeCollection;
+  std::map<shapeId_t, std::shared_ptr<sf::Shape>> mShapeCollection;
   std::deque<std::unique_ptr<guiManRequest>> mRequestQueue;
 
   std::shared_ptr<ThreadCom::ThreadCommunicator<guiManRequest>> mGuiRequester;

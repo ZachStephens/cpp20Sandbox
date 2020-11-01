@@ -2,6 +2,9 @@
 #include "GuiManager/Messages/GuiManMessages.hpp"
 #include "ThreadCommunicator/Messages/ThreadCommMessages.hpp"
 
+#include <ranges>
+
+
 namespace clman {
 
 
@@ -20,7 +23,7 @@ void CoreLogicManager::run()
   start = Clock::now();
 
 
-  while (true) {
+  while (!mThreadComm->killFlag) {
 
     now = Clock::now();
     duration = std::chrono::duration_cast<std::chrono::milliseconds>(now - start);
@@ -31,12 +34,18 @@ void CoreLogicManager::run()
       //do stuff every 100 milliseconds
       std::cout << "waiting\n";
 
-      auto guiRequest = gman::guiManRequest(
-        5,
-        200,
-        200);
 
-      mThreadComm->ship(mGuiManagerId, guiRequest);
+      for (const auto &item : mPosMap) {
+        auto guiRequest = gman::guiManRequest(
+          item.first,
+          std::get<0>(item.second),
+          std::get<1>(item.second));
+        mGuiRequester->ship(mGuiManagerId, guiRequest);
+      }
+
+      float xpos, ypos;
+      std::tie(xpos, ypos) = mPosMap[5];
+      mPosMap[5] = std::tuple<float, float>(xpos + 5, ++ypos + 5);
 
 
       start = Clock::now();

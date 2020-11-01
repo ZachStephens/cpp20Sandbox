@@ -31,6 +31,11 @@ private:
   //void react();
 
 public:
+  bool killFlag = false;
+
+
+  void kill() { killFlag = true; }
+
   Enum_CommRetVal ship(const pingMsg &pMsg)
   {
     if (mMsgMap.find(pMsg.mDestId) == mMsgMap.end()) {

@@ -11,9 +11,11 @@ class RunnableManager
 protected:
   std::shared_ptr<ThreadCom::ThreadCommunicator<ThreadCom::commMsg>> mThreadComm;
 
+
 public:
   RunnableManager(std::shared_ptr<ThreadCom::ThreadCommunicator<ThreadCom::commMsg>> threadComm);
   ThreadCom::serviceId_t mServiceId;
+
 
   virtual void run() = 0;
   virtual ~RunnableManager(){};
