@@ -55,7 +55,7 @@ public:
       return Enum_CommRetVal::FAIL;
     }
     auto handler = mMsgMap[sId]->msgHandler;
-    std::cout << "\nShipping to handler# " << sId << "\n";
+    //std::cout << "\nShipping to handler# " << sId << "\n";
     handler(std::make_unique<MSG_T>(cMsg));
     return Enum_CommRetVal::SUCCESS;
   }

@@ -2,17 +2,50 @@
 #include "GuiManager/Messages/GuiManMessages.hpp"
 #include "ThreadCommunicator/Messages/ThreadCommMessages.hpp"
 
-#include <ranges>
-
 
 namespace clman {
 
+
+CoreLogicManager::CoreLogicManager(std::shared_ptr<ThreadCom::ThreadCommunicator<ThreadCom::commMsg>> threadComm, std::shared_ptr<ThreadCom::ThreadCommunicator<gman::guiManRequest>> guiManRequestComm) : RunnableManager(threadComm), mGuiRequester(guiManRequestComm)
+{
+  mServiceId = mThreadComm->registerHandler(std::bind(&CoreLogicManager::coreLogicHandler, this, std::placeholders::_1));
+  mPosMap.insert(posMapPair_t(5, std::tuple<float, float>(600, 600)));
+
+  std::random_device randdev;
+  mGenerator = std::mt19937(randdev());
+  mDistrib = std::uniform_real_distribution<>(-10, 10);
+}
+
+void CoreLogicManager::configGuiManService(const ThreadCom::serviceId_t guiManServiceId)
+{
+  mGuiManagerId = guiManServiceId;
+}
 
 void CoreLogicManager::waitForDependencies()
 {
   ThreadCom::pingMsg pMsg(mGuiManagerId, mServiceId);
   mThreadComm->ship(pMsg);
 }
+
+
+void CoreLogicManager::update()
+{
+  float xpos, ypos;
+  std::tie(xpos, ypos) = mPosMap[5];
+
+
+  float deltaX = static_cast<float>(mDistrib(mGenerator));
+  float deltaY = static_cast<float>(mDistrib(mGenerator));
+  mPosMap[5] = std::tuple<float, float>(xpos + deltaX, ypos + deltaY);
+}
+
+
+void CoreLogicManager::coreLogicHandler(std::unique_ptr<ThreadCom::commMsg> msg)
+{
+  msg.get();
+  return;
+}
+
 
 void CoreLogicManager::run()
 {
@@ -30,10 +63,11 @@ void CoreLogicManager::run()
 
     waitForDependencies();
 
-    if (duration.count() >= 500) {
+    if (duration.count() >= 1) {
       //do stuff every 100 milliseconds
-      std::cout << "waiting\n";
+      //std::cout << "waiting\n";
 
+      update();
 
       for (const auto &item : mPosMap) {
         auto guiRequest = gman::guiManRequest(
@@ -42,11 +76,6 @@ void CoreLogicManager::run()
           std::get<1>(item.second));
         mGuiRequester->ship(mGuiManagerId, guiRequest);
       }
-
-      float xpos, ypos;
-      std::tie(xpos, ypos) = mPosMap[5];
-      mPosMap[5] = std::tuple<float, float>(xpos + 5, ++ypos + 5);
-
 
       start = Clock::now();
     }

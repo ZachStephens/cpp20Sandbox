@@ -12,6 +12,10 @@
 #include "ThreadCommunicator/Messages/ThreadCommMessages.hpp"
 #include "GuiManager/Messages/GuiManMessages.hpp"
 
+
+#include <random>
+
+
 namespace clman {
 
 using posMapPair_t = std::pair<gman::shapeId_t, std::tuple<float, float>>;
@@ -22,26 +26,24 @@ private:
   ThreadCom::serviceId_t mServiceId;
   ThreadCom::serviceId_t mGuiManagerId;
 
+
+  std::mt19937 mGenerator;
+  std::uniform_real_distribution<> mDistrib;
+
   std::map<const gman::shapeId_t, std::tuple<float, float>> mPosMap;
 
   std::shared_ptr<ThreadCom::ThreadCommunicator<gman::guiManRequest>> mGuiRequester;
 
-  void coreLogicHandler(std::unique_ptr<ThreadCom::commMsg> msg)
-  {
-    msg.get();
-    return;
-  }
+  void update();
+
+  void coreLogicHandler(std::unique_ptr<ThreadCom::commMsg> msg);
 
   void waitForDependencies();
 
 public:
-  CoreLogicManager(std::shared_ptr<ThreadCom::ThreadCommunicator<ThreadCom::commMsg>> threadComm, std::shared_ptr<ThreadCom::ThreadCommunicator<gman::guiManRequest>> guiManRequestComm) : RunnableManager(threadComm), mGuiRequester(guiManRequestComm)
-  {
-    mServiceId = mThreadComm->registerHandler(std::bind(&CoreLogicManager::coreLogicHandler, this, std::placeholders::_1));
-    mPosMap.insert(posMapPair_t(5, std::tuple<float, float>(200, 200)));
-  };
+  CoreLogicManager(std::shared_ptr<ThreadCom::ThreadCommunicator<ThreadCom::commMsg>> threadComm, std::shared_ptr<ThreadCom::ThreadCommunicator<gman::guiManRequest>> guiManRequestComm);
 
-  void configGuiManService(const ThreadCom::serviceId_t guiManServiceId) { mGuiManagerId = guiManServiceId; }
+  void configGuiManService(const ThreadCom::serviceId_t guiManServiceId);
 
   void run();
 };

@@ -22,7 +22,7 @@ GuiManager::GuiManager(std::shared_ptr<ThreadCom::ThreadCommunicator<ThreadCom::
   std::shared_ptr<ThreadCom::ThreadCommunicator<gman::guiManRequest>> guiManRequestComm) : RunnableManager(threadComm), mGuiRequester(guiManRequestComm)
 {
 
-  this->mWindow.setFramerateLimit(45);
+  this->mWindow.setFramerateLimit(30);
   ImGui::SFML::Init(this->mWindow);
 
   mServiceId = mThreadComm->registerHandler(std::bind(&GuiManager::commMsgHandler, this, std::placeholders::_1));
@@ -34,9 +34,11 @@ void GuiManager::updateShape(const shapeId_t shapeId, const sf::Vector2f &reques
 {
 
   if (mShapeCollection.find(shapeId) == mShapeCollection.end()) {
-    mShapeCollection.insert(std::pair<const shapeId_t, std::shared_ptr<sf::Shape>>(shapeId, std::make_shared<sf::CircleShape>(100.f)));
+    mShapeCollection.insert(std::pair<const shapeId_t, std::shared_ptr<sf::Shape>>(shapeId, std::make_shared<sf::CircleShape>(5.f, 3)));
     mShapeCollection[shapeId]->setFillColor(sf::Color::Green);
-    std::cout << "created shape with ID: " << shapeId << "\n";
+    mShapeCollection[shapeId]->setPosition(static_cast<float>(mWindow.getSize().x / 2), static_cast<float>(mWindow.getSize().x / 2));
+    std::cout
+      << "created shape with ID: " << shapeId << "\n";
   } else {
     mShapeCollection[shapeId]->setPosition(requestedPos);
   }
@@ -45,53 +47,26 @@ void GuiManager::updateShape(const shapeId_t shapeId, const sf::Vector2f &reques
 void GuiManager::commMsgHandler(std::unique_ptr<ThreadCom::commMsg> msg)
 {
 
-  //ThreadCom::commMsg cmsg(*(move(msg)));
-
-  //guiManRequest *gmsg = reinterpret_cast<guiManRequest *>(msg.get());
-
   msg.get();
-
-
-  // mRequestQueue.push_back(std::unique_ptr<guiManRequest>(gmsg));
-
-  // //std::unique_ptr<guiManRequest> gmsg() = ;
-
-  // std::cout
-  //   << mRequestQueue->back()->mShapeId << std::endl;
-  // std::cout << mRequestQueue->back()->mPosX << std::endl;
-  // std::cout << mRequestQueue->back()->mPosY << std::endl;
 }
 
 
 void GuiManager::guiRequestMsgHandler(std::unique_ptr<guiManRequest> msg)
 {
 
-  //ThreadCom::commMsg cmsg(*(move(msg)));
-
-  //guiManRequest *gmsg = reinterpret_cast<guiManRequest *>(msg.get());
-
-  std::cout << "GuiManager.cpp::GuiManRequest Handler\n";
+  //std::cout << "GuiManager.cpp::GuiManRequest Handler\n";
 
 
   mRequestQueue.push_back(std::move(msg));
-
-  //std::unique_ptr<guiManRequest> gmsg() = ;
-
-  std::cout
-    << mRequestQueue.back()->mShapeId << std::endl;
-  std::cout << mRequestQueue.back()->mPosX << std::endl;
-  std::cout << mRequestQueue.back()->mPosY << std::endl;
 }
 
 
 void GuiManager::update()
 {
 
-
   ImGui::SFML::Update(mWindow, mDeltaClock.restart());
 
   auto concatted = std::string("Hello, world!, ");
-
   ImGui::Begin(concatted.c_str());
   ImGui::Button("Look at this pretty button");
   ImGui::End();
@@ -107,7 +82,6 @@ void GuiManager::update()
       this->updateShape(request->mShapeId, requestedPos);
 
       auto shapeToDraw = mShapeCollection[request->mShapeId];
-
       this->mWindow.draw(*shapeToDraw);
     });
 
@@ -119,6 +93,7 @@ void GuiManager::update()
 
 void GuiManager::run()
 {
+  //ImGui::SFML::Update(mWindow, mDeltaClock.restart());
   while (mWindow.isOpen()) {
     sf::Event event;
     while (mWindow.pollEvent(event)) {
@@ -128,7 +103,12 @@ void GuiManager::run()
         mWindow.close();
       }
     }
-    update();
+
+    auto elapsed = mDeltaClock.getElapsedTime().asMilliseconds();
+    if (elapsed > 300) {
+      //std::cout << "elapsed: " << elapsed << "\n";
+      update();
+    }
   }
 
   ImGui::SFML::Shutdown();
