@@ -21,13 +21,15 @@ public:
   shapeId_t mShapeId;
   float mPosX;
   float mPosY;
+  bool mIsTransparent;
 
   guiManRequest() {}
 
   guiManRequest(
     shapeId_t shapeId,
     float posX,
-    float posY) : mShapeId(shapeId), mPosX(posX), mPosY(posY)
+    float posY,
+    bool isTransparent) : mShapeId(shapeId), mPosX(posX), mPosY(posY), mIsTransparent(isTransparent)
   {
   }
 };

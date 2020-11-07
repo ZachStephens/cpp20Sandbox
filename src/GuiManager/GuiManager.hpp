@@ -36,7 +36,7 @@ private:
 
   sf::RenderWindow mWindow = sf::RenderWindow(sf::VideoMode(1920, 1080), "Test IMGUI Project");
 
-  void updateShape(const shapeId_t shapeId, const sf::Vector2f &requestedPos);
+  void updateShape(const shapeId_t shapeId, const sf::Vector2f &requestedPos, bool isTransparent);
 
   void update();
 

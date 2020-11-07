@@ -13,7 +13,7 @@ CoreLogicManager::CoreLogicManager(std::shared_ptr<ThreadCom::ThreadCommunicator
 
   std::random_device randdev;
   mGenerator = std::mt19937(randdev());
-  mDistrib = std::uniform_real_distribution<>(-10, 10);
+  mDistrib = std::uniform_real_distribution<>(-30, 30);
 }
 
 void CoreLogicManager::configGuiManService(const ThreadCom::serviceId_t guiManServiceId)
@@ -63,9 +63,19 @@ void CoreLogicManager::run()
 
     waitForDependencies();
 
-    if (duration.count() >= 1) {
+    if (duration.count() >= 50) {
       //do stuff every 100 milliseconds
       //std::cout << "waiting\n";
+
+      //Erase
+      for (const auto &item : mPosMap) {
+        auto guiRequest = gman::guiManRequest(
+          item.first,
+          std::get<0>(item.second),
+          std::get<1>(item.second),
+          true);
+        mGuiRequester->ship(mGuiManagerId, guiRequest);
+      }
 
       update();
 
@@ -73,7 +83,8 @@ void CoreLogicManager::run()
         auto guiRequest = gman::guiManRequest(
           item.first,
           std::get<0>(item.second),
-          std::get<1>(item.second));
+          std::get<1>(item.second),
+          false);
         mGuiRequester->ship(mGuiManagerId, guiRequest);
       }
 

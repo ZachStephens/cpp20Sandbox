@@ -30,16 +30,28 @@ GuiManager::GuiManager(std::shared_ptr<ThreadCom::ThreadCommunicator<ThreadCom::
 }
 
 
-void GuiManager::updateShape(const shapeId_t shapeId, const sf::Vector2f &requestedPos)
+void GuiManager::updateShape(const shapeId_t shapeId, const sf::Vector2f &requestedPos, bool isTransparent)
 {
 
   if (mShapeCollection.find(shapeId) == mShapeCollection.end()) {
-    mShapeCollection.insert(std::pair<const shapeId_t, std::shared_ptr<sf::Shape>>(shapeId, std::make_shared<sf::CircleShape>(5.f, 3)));
-    mShapeCollection[shapeId]->setFillColor(sf::Color::Green);
+    mShapeCollection.insert(std::pair<const shapeId_t, std::shared_ptr<sf::Shape>>(shapeId, std::make_shared<sf::CircleShape>(15.f, 5)));
+    mShapeCollection[shapeId]->setFillColor(sf::Color::Blue);
     mShapeCollection[shapeId]->setPosition(static_cast<float>(mWindow.getSize().x / 2), static_cast<float>(mWindow.getSize().x / 2));
     std::cout
       << "created shape with ID: " << shapeId << "\n";
   } else {
+
+
+    //auto original_color = mShapeCollection[shapeId]->getFillColor();
+    auto shapeToDraw = mShapeCollection[shapeId];
+    if (isTransparent) {
+      std::cout << "is transparent\n";
+      shapeToDraw->setFillColor(sf::Color::Transparent);
+    } else {
+      shapeToDraw->setFillColor(sf::Color::Blue);
+    }
+
+
     mShapeCollection[shapeId]->setPosition(requestedPos);
   }
 }
@@ -79,9 +91,25 @@ void GuiManager::update()
     mRequestQueue.end(),
     [this](const auto &request) {
       sf::Vector2f requestedPos(request->mPosX, request->mPosY);
-      this->updateShape(request->mShapeId, requestedPos);
+
+
+      this->updateShape(request->mShapeId, requestedPos, request->mIsTransparent);
 
       auto shapeToDraw = mShapeCollection[request->mShapeId];
+
+
+      if (shapeToDraw->getFillColor() == sf::Color::Transparent) {
+        std::cout << "setFillColor: "
+                  << "Transparent";
+      } else {
+        std::cout << "setFillColor: "
+                  << "Other";
+      }
+      std::cout << " at "
+                << shapeToDraw->getPosition().x
+                << ", "
+                << shapeToDraw->getPosition().y
+                << "\n";
       this->mWindow.draw(*shapeToDraw);
     });
 
@@ -102,10 +130,35 @@ void GuiManager::run()
       if (event.type == sf::Event::Closed) {
         mWindow.close();
       }
+      if (event.type == sf::Event::KeyPressed) {
+        switch (event.key.code) {
+        case sf::Keyboard::Escape:
+          mWindow.close();
+          break;
+        case sf::Keyboard::Left:
+        case sf::Keyboard::A:
+          std::cout << "Left\n";
+          break;
+        case sf::Keyboard::Right:
+        case sf::Keyboard::D:
+          std::cout << "Right\n";
+          break;
+        case sf::Keyboard::Up:
+        case sf::Keyboard::W:
+          std::cout << "Up\n";
+          break;
+        case sf::Keyboard::Down:
+        case sf::Keyboard::S:
+          std::cout << "Down\n";
+          break;
+        default:
+          break;
+        }
+      }
     }
 
     auto elapsed = mDeltaClock.getElapsedTime().asMilliseconds();
-    if (elapsed > 300) {
+    if (elapsed > 150) {
       //std::cout << "elapsed: " << elapsed << "\n";
       update();
     }

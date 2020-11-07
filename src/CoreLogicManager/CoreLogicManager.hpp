@@ -31,6 +31,7 @@ private:
   std::uniform_real_distribution<> mDistrib;
 
   std::map<const gman::shapeId_t, std::tuple<float, float>> mPosMap;
+  //std::map<const gman::shapeId_t, bool> > mColMap;
 
   std::shared_ptr<ThreadCom::ThreadCommunicator<gman::guiManRequest>> mGuiRequester;
 
