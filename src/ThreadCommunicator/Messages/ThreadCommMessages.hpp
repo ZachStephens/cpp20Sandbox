@@ -14,11 +14,16 @@ enum Enum_CommRetVal {
 class commMsg
 {
 public:
-  commMsg() {}
+  commMsg(const std::vector<uint8_t> &bytes = {}) : mBytes(bytes)
+  {
+  }
+
+  const std::vector<uint8_t> &getBytes() { return mBytes; };
 
 protected:
   std::vector<uint8_t> mBytes;
 };
+
 
 template<typename MSG_T>
 using commHandler_t = std::function<void(std::unique_ptr<MSG_T>)>;

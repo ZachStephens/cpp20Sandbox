@@ -36,7 +36,14 @@ private:
 
   sf::RenderWindow mWindow = sf::RenderWindow(sf::VideoMode(1920, 1080), "Test IMGUI Project");
 
-  void updateShape(const shapeId_t shapeId, const sf::Vector2f &requestedPos, bool isTransparent);
+  void processGuiManRequest(const std::unique_ptr<guiManRequest> &&request);
+
+  void printShape(const std::shared_ptr<sf::Shape> &shapeToPrint);
+
+  void updateShape(const shapeId_t shapeId, const sf::Vector2f &requestedPos, const sf::Color requestedColor);
+
+  void onKeyPressed(const sf::Keyboard::Key code);
+  void onKeyReleased(const sf::Keyboard::Key key);
 
   void update();
 

@@ -30,8 +30,21 @@ private:
   std::mt19937 mGenerator;
   std::uniform_real_distribution<> mDistrib;
 
+  struct DIRECTIONS_STATE
+  {
+    bool LEFT = false;
+    bool RIGHT = false;
+    bool UP = false;
+    bool DOWN = false;
+  };
+
+
   std::map<const gman::shapeId_t, std::tuple<float, float>> mPosMap;
+  std::map<const gman::shapeId_t, DIRECTIONS_STATE> mDirMap;
   //std::map<const gman::shapeId_t, bool> > mColMap;
+
+  void updatePos(const gman::shapeId_t id, const float deltaX, const float deltaY);
+
 
   std::shared_ptr<ThreadCom::ThreadCommunicator<gman::guiManRequest>> mGuiRequester;
 
