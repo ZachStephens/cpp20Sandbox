@@ -129,10 +129,11 @@ void GuiManager::onKeyPressed(const sf::Keyboard::Key key)
   } else {
 
     std::vector<uint8_t> bytesToPass;
-    bytesToPass.push_back(0);
+    bytesToPass.push_back(1);
     bytesToPass.insert(bytesToPass.end(), &key, &key + sizeof(uint8_t));
 
     auto logicMsg = ThreadCom::commMsg(bytesToPass);
+    std::cout << "Is pressed \n";
     mThreadComm->ship(2, logicMsg);
   }
 }
@@ -146,10 +147,11 @@ void GuiManager::onKeyReleased(const sf::Keyboard::Key key)
   } else {
 
     std::vector<uint8_t> bytesToPass;
-    bytesToPass.push_back(1);
+    bytesToPass.push_back(0);
     bytesToPass.insert(bytesToPass.end(), &key, &key + sizeof(uint8_t));
 
     auto logicMsg = ThreadCom::commMsg(bytesToPass);
+    std::cout << "Is released \n";
     mThreadComm->ship(2, logicMsg);
   }
 }
@@ -157,6 +159,7 @@ void GuiManager::onKeyReleased(const sf::Keyboard::Key key)
 void GuiManager::run()
 {
   //ImGui::SFML::Update(mWindow, mDeltaClock.restart());
+  mWindow.setKeyRepeatEnabled(false);
   while (mWindow.isOpen()) {
     sf::Event event;
     while (mWindow.pollEvent(event)) {
@@ -166,9 +169,11 @@ void GuiManager::run()
         mWindow.close();
       }
       if (event.type == sf::Event::KeyPressed) {
+        std::cout << "press event \n";
         onKeyPressed(event.key.code);
       }
-      if (event.type == sf::Event::KeyPressed) {
+      if (event.type == sf::Event::KeyReleased) {
+        std::cout << "release event \n";
         onKeyReleased(event.key.code);
       }
     }
