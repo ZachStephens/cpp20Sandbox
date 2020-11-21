@@ -7,7 +7,11 @@
 namespace clman {
 
 
-CoreLogicManager::CoreLogicManager(std::shared_ptr<ThreadCom::ThreadCommunicator<ThreadCom::commMsg>> threadComm, std::shared_ptr<ThreadCom::ThreadCommunicator<gman::guiManRequest>> guiManRequestComm) : RunnableManager(threadComm), mGuiRequester(guiManRequestComm)
+constexpr auto MAX_X_MAG = 1920 - 50;
+constexpr auto MAX_Y_MAG = 1080 - 50;
+
+CoreLogicManager::CoreLogicManager(std::shared_ptr<ThreadCom::ThreadCommunicator<ThreadCom::commMsg>> threadComm, std::shared_ptr<ThreadCom::ThreadCommunicator<gman::guiManRequest>> guiManRequestComm) : RunnableManager(threadComm),
+                                                                                                                                                                                                           mGuiRequester(guiManRequestComm)
 {
   mServiceId = mThreadComm->registerHandler(std::bind(&CoreLogicManager::coreLogicHandler, this, std::placeholders::_1));
   mPosMap.insert(posMapPair_t(5, std::tuple<float, float>(600, 600)));
@@ -35,7 +39,22 @@ void CoreLogicManager::updatePos(const gman::shapeId_t id, const float deltaX, c
   float xpos, ypos;
   std::tie(xpos, ypos) = mPosMap[id];
 
-  mPosMap[5] = std::tuple<float, float>(xpos + deltaX, ypos + deltaY);
+  auto newXpos = xpos + deltaX;
+  auto newYpos = ypos + deltaY;
+
+  if (newXpos >= MAX_X_MAG) {
+    newXpos = MAX_X_MAG;
+  } else if (newXpos <= 0) {
+    newXpos = 0;
+  }
+
+  if (newYpos >= MAX_Y_MAG) {
+    newYpos = MAX_Y_MAG;
+  } else if (newYpos <= 0) {
+    newYpos = 0;
+  }
+
+  mPosMap[5] = std::tuple<float, float>(newXpos, newYpos);
 }
 
 void CoreLogicManager::update()
