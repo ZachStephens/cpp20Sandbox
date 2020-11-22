@@ -6,11 +6,11 @@
 #include <SFML/Window/Event.hpp>
 #include <SFML/Graphics/CircleShape.hpp>
 
+#include <spdlog/spdlog.h>
 
 #include "GuiManager.hpp"
 #include "../ThreadCommunicator/ThreadCommunicator.hpp"
 #include "CoreLogicManager/Messages/LogicInputMessage.hpp"
-
 
 #include <iostream>
 #include <map>
@@ -27,6 +27,22 @@ GuiManager::GuiManager(std::shared_ptr<ThreadCom::ThreadCommunicator<ThreadCom::
 
   this->mWindow.setFramerateLimit(30);
   ImGui::SFML::Init(this->mWindow);
+
+  sf::Image image;
+
+  image.loadFromFile("/home/zach/Pictures/bison.jpeg");
+
+  mBackgroundTexture.loadFromImage(image);
+
+  auto TextureSize = mBackgroundTexture.getSize();//Get size of texture.
+  auto WindowSize = mWindow.getSize();//Get size of window.
+
+  auto ScaleX = static_cast<float>(WindowSize.x) / static_cast<float>(TextureSize.x);
+  auto ScaleY = static_cast<float>(WindowSize.y) / static_cast<float>(TextureSize.y);//Calculate scale.
+
+  mBackground.setTexture(mBackgroundTexture);
+  mBackground.setScale(ScaleX, ScaleY);//Set scale.
+
 
   mServiceId = mThreadComm->registerHandler(std::bind(&GuiManager::commMsgHandler, this, std::placeholders::_1));
   mGuiRequestHandlerId = mGuiRequester->registerHandler(std::bind(&GuiManager::guiRequestMsgHandler, this, std::placeholders::_1));
@@ -65,25 +81,6 @@ void GuiManager::guiRequestMsgHandler(std::unique_ptr<guiManRequest> msg)
 }
 
 
-void GuiManager::printShape(const std::shared_ptr<sf::Shape> &shapeToPrint)
-{
-
-  if (shapeToPrint->getFillColor() == sf::Color::Black) {
-    std::cout << "FillColor: "
-              << "Black";
-  } else {
-    std::cout << "FillColor: "
-              << "Other";
-  }
-
-  std::cout << " at "
-            << shapeToPrint->getPosition().x
-            << ", "
-            << shapeToPrint->getPosition().y
-            << "\n";
-}
-
-
 void GuiManager::processGuiManRequest(const std::unique_ptr<guiManRequest> &&request)
 {
   sf::Vector2f requestedPos(request->mPosX, request->mPosY);
@@ -95,7 +92,6 @@ void GuiManager::processGuiManRequest(const std::unique_ptr<guiManRequest> &&req
 
   auto shapeToDraw = mShapeCollection[request->mShapeId];
 
-  //printShape(shapeToDraw);
 
   this->mWindow.draw(*shapeToDraw);
 }
@@ -110,11 +106,13 @@ void GuiManager::update()
   ImGui::Button("Look at this pretty button");
   ImGui::End();
 
-  mWindow.clear();
+  //mWindow.clear();
+
   while (!mRequestQueue.empty()) {
     processGuiManRequest(std::move(mRequestQueue.front()));
     mRequestQueue.pop_front();
   }
+
 
   ImGui::SFML::Render(mWindow);
   mWindow.display();
@@ -133,7 +131,8 @@ void GuiManager::onKeyPressed(const sf::Keyboard::Key key)
     bytesToPass.insert(bytesToPass.end(), &key, &key + sizeof(uint8_t));
 
     auto logicMsg = ThreadCom::commMsg(bytesToPass);
-    std::cout << "Is pressed \n";
+    spdlog::debug("Is pressed");
+
     mThreadComm->ship(2, logicMsg);
   }
 }
@@ -151,7 +150,7 @@ void GuiManager::onKeyReleased(const sf::Keyboard::Key key)
     bytesToPass.insert(bytesToPass.end(), &key, &key + sizeof(uint8_t));
 
     auto logicMsg = ThreadCom::commMsg(bytesToPass);
-    std::cout << "Is released \n";
+    spdlog::debug("Is released");
     mThreadComm->ship(2, logicMsg);
   }
 }
@@ -160,6 +159,7 @@ void GuiManager::run()
 {
   //ImGui::SFML::Update(mWindow, mDeltaClock.restart());
   mWindow.setKeyRepeatEnabled(false);
+  mWindow.draw(mBackground);
   while (mWindow.isOpen()) {
     sf::Event event;
     while (mWindow.pollEvent(event)) {
@@ -169,11 +169,9 @@ void GuiManager::run()
         mWindow.close();
       }
       if (event.type == sf::Event::KeyPressed) {
-        std::cout << "press event \n";
         onKeyPressed(event.key.code);
       }
       if (event.type == sf::Event::KeyReleased) {
-        std::cout << "release event \n";
         onKeyReleased(event.key.code);
       }
     }
@@ -181,6 +179,7 @@ void GuiManager::run()
     auto elapsed = mDeltaClock.getElapsedTime().asMilliseconds();
     if (elapsed > 2) {
       //std::cout << "elapsed: " << elapsed << "\n";
+
       update();
     }
   }

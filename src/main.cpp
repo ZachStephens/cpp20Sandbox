@@ -17,7 +17,6 @@
 
 int main()
 {
-
   //Use the default logger (stdout, multi-threaded, colored)
 
 
@@ -31,6 +30,7 @@ int main()
 
   coreLogicMan->configGuiManService(guiMan->mServiceId);
 
+  spdlog::set_level(spdlog::level::debug);
 
   std::jthread threadGui([guiMan = move(guiMan)]() {
     guiMan->run();

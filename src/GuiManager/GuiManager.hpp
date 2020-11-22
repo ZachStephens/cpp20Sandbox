@@ -5,6 +5,7 @@
 #include <imgui-SFML.h>
 
 #include <SFML/Graphics/RenderWindow.hpp>
+#include <SFML/Graphics.hpp>
 #include <SFML/System/Clock.hpp>
 #include <SFML/Window/Event.hpp>
 #include <SFML/Graphics/CircleShape.hpp>
@@ -32,17 +33,22 @@ private:
   std::shared_ptr<ThreadCom::ThreadCommunicator<guiManRequest>> mGuiRequester;
   ThreadCom::serviceId_t mGuiRequestHandlerId;
 
+
+  sf::Texture mBackgroundTexture;
+  sf::Sprite mBackground;
   sf::Clock mDeltaClock;
 
   sf::RenderWindow mWindow = sf::RenderWindow(sf::VideoMode(1920, 1080), "Test IMGUI Project");
 
   void processGuiManRequest(const std::unique_ptr<guiManRequest> &&request);
 
-  void printShape(const std::shared_ptr<sf::Shape> &shapeToPrint);
 
   void updateShape(const shapeId_t shapeId, const sf::Vector2f &requestedPos, const sf::Color requestedColor);
 
+  //Event Handlers
+  // When a key is pressed
   void onKeyPressed(const sf::Keyboard::Key code);
+  // When a key is released
   void onKeyReleased(const sf::Keyboard::Key key);
 
   void update();

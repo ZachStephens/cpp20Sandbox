@@ -1,6 +1,10 @@
 #ifndef THREAD_COMMUNICATOR_MESSAGES
 #define THREAD_COMMUNICATOR_MESSAGES
 
+#include <vector>
+#include <functional>
+#include <memory>
+
 namespace ThreadCom {
 
 using serviceId_t = unsigned int;

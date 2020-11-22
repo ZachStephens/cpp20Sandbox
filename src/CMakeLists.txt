@@ -43,6 +43,8 @@ set(CMAKE_CXX_STANDARD 20)
 #   add_subdirectory(nana)
 # endif()
 
+set(SRC_ROOT ${CMAKE_CURRENT_SOURCE_DIR})
+
 add_subdirectory(CoreLogicManager)
 add_subdirectory(GuiManager)
 add_subdirectory(RunnableManager)
