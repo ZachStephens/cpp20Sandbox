@@ -13,8 +13,8 @@
 #include "GuiManager/Messages/GuiManMessages.hpp"
 #include "EntityManager/EntityManager.hpp"
 
-#include <random>
-
+//#include <random>
+//#include <deque>
 
 namespace clman {
 
@@ -25,18 +25,21 @@ private:
   ThreadCom::serviceId_t mServiceId;
   ThreadCom::serviceId_t mGuiManagerId;
 
+
+  std::shared_ptr<ThreadCom::ThreadCommunicator<gman::guiManRequest>> mGuiRequester;
   // std::mt19937 mGenerator;
   // std::uniform_real_distribution<> mDistrib;
 
-  std::shared_ptr<ThreadCom::ThreadCommunicator<gman::guiManRequest>> mGuiRequester;
-
   entman::EntityManager mEntityManager;
 
-  void update();
+
+  void readMessages(const std::unique_ptr<ThreadCom::commMsg> &&msg);
 
   void coreLogicHandler(std::unique_ptr<ThreadCom::commMsg> msg);
 
   void waitForDependencies();
+
+  void update();
 
 public:
   CoreLogicManager(std::shared_ptr<ThreadCom::ThreadCommunicator<ThreadCom::commMsg>> threadComm, std::shared_ptr<ThreadCom::ThreadCommunicator<gman::guiManRequest>> guiManRequestComm);

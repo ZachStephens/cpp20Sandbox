@@ -76,7 +76,6 @@ void GuiManager::commMsgHandler(std::unique_ptr<ThreadCom::commMsg> msg)
 
 void GuiManager::guiRequestMsgHandler(std::unique_ptr<guiManRequest> msg)
 {
-
   mRequestQueue.push_back(std::move(msg));
 }
 
@@ -98,7 +97,8 @@ void GuiManager::processGuiManRequest(const std::unique_ptr<guiManRequest> &&req
 
 void GuiManager::update()
 {
-
+  mWindow.clear();
+  mWindow.draw(mBackground);
   ImGui::SFML::Update(mWindow, mDeltaClock.restart());
 
   auto concatted = std::string("Hello, world!, ");
@@ -128,11 +128,12 @@ void GuiManager::onKeyPressed(const sf::Keyboard::Key key)
 
     std::vector<uint8_t> bytesToPass;
     bytesToPass.push_back(1);
-    bytesToPass.insert(bytesToPass.end(), &key, &key + sizeof(uint8_t));
+    const auto keyAsByte = static_cast<uint8_t>(key);
+    spdlog::debug("keyAsByte: {}", keyAsByte);
+    bytesToPass.push_back(keyAsByte);
 
     auto logicMsg = ThreadCom::commMsg(bytesToPass);
-    spdlog::debug("Is pressed");
-
+    spdlog::debug("Is pressed {}", key);
     mThreadComm->ship(2, logicMsg);
   }
 }
@@ -140,17 +141,18 @@ void GuiManager::onKeyPressed(const sf::Keyboard::Key key)
 
 void GuiManager::onKeyReleased(const sf::Keyboard::Key key)
 {
-
   if (key == sf::Keyboard::Escape) {
     mWindow.close();
   } else {
 
     std::vector<uint8_t> bytesToPass;
     bytesToPass.push_back(0);
-    bytesToPass.insert(bytesToPass.end(), &key, &key + sizeof(uint8_t));
+    const auto keyAsByte = static_cast<uint8_t>(key);
+    spdlog::debug("keyAsByte: {}", keyAsByte);
+    bytesToPass.push_back(keyAsByte);
 
     auto logicMsg = ThreadCom::commMsg(bytesToPass);
-    spdlog::debug("Is released");
+    spdlog::debug("Is released {}", key);
     mThreadComm->ship(2, logicMsg);
   }
 }
@@ -176,12 +178,10 @@ void GuiManager::run()
       }
     }
 
-    auto elapsed = mDeltaClock.getElapsedTime().asMilliseconds();
-    if (elapsed > 2) {
-      //std::cout << "elapsed: " << elapsed << "\n";
-
-      update();
-    }
+    //auto elapsed = mDeltaClock.getElapsedTime().asMilliseconds();
+    //if (elapsed > 2) {
+    update();
+    //}
   }
 
   ImGui::SFML::Shutdown();

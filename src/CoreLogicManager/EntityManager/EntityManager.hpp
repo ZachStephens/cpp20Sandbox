@@ -33,7 +33,6 @@ private:
 
   inline void boundsCheck(float &x, const float MAX_N_MAG);
 
-
 public:
   std::map<const gman::shapeId_t, std::tuple<float, float>> mPosMap;
 

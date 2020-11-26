@@ -9,8 +9,13 @@ namespace entman {
 
 EntityManager::EntityManager()
 {
-  mPosMap.insert(posMapPair_t(5, std::tuple<float, float>(600, 600)));
-  mDirMap.insert(std::pair<gman::shapeId_t, DIRECTIONS_STATE>(5, DIRECTIONS_STATE()));
+
+  const auto ids = { 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 };
+
+  for (auto id : ids) {
+    mPosMap.insert(posMapPair_t(id, std::tuple<float, float>(200 + id * 45, 200 + id * 45)));
+    mDirMap.insert(std::pair<gman::shapeId_t, DIRECTIONS_STATE>(id, DIRECTIONS_STATE()));
+  }
 }
 
 
@@ -40,65 +45,82 @@ void EntityManager::updatePos(const gman::shapeId_t id, const float deltaX, cons
 
 void EntityManager::processDirectionsMessage(bool downPress, const sf::Keyboard::Key &key)
 {
-  auto &direction = mDirMap[5];
 
-  spdlog::debug("PRESSED: {}", downPress);
-  spdlog::debug("UP {}", direction.UP);
-  spdlog::debug("DOWN {}", direction.DOWN);
-  spdlog::debug("LEFT {}", direction.LEFT);
-  spdlog::debug("RIGHT {}", direction.RIGHT);
+  for (auto &[id, direction] : mDirMap) {
 
-  switch (key) {
-  case sf::Keyboard::Left:
-  case sf::Keyboard::A:
-    direction.LEFT = (downPress) ? true : false;
-    break;
-  case sf::Keyboard::Right:
-  case sf::Keyboard::D:
-    direction.RIGHT = (downPress) ? true : false;
-    break;
-  case sf::Keyboard::Up:
-  case sf::Keyboard::W:
-    direction.UP = (downPress) ? true : false;
-    break;
-  case sf::Keyboard::Down:
-  case sf::Keyboard::S:
-    direction.DOWN = (downPress) ? true : false;
-    break;
-  default:
-    break;
+    //spdlog::debug("processDirectionsMessage: PRESSED: {}, key: {}", downPress, key);
+
+
+    switch (key) {
+    case sf::Keyboard::Left:
+    case sf::Keyboard::A:
+      spdlog::debug("processDirectionsMessage: LEFT {}", direction.LEFT);
+      direction.LEFT = (downPress) ? true : false;
+      spdlog::debug("processDirectionsMessage: LEFT {}", direction.LEFT);
+      break;
+    case sf::Keyboard::Right:
+    case sf::Keyboard::D:
+      spdlog::debug("processDirectionsMessage: RIGHT {}", direction.RIGHT);
+      direction.RIGHT = (downPress) ? true : false;
+      spdlog::debug("processDirectionsMessage: RIGHT {}", direction.RIGHT);
+      break;
+    case sf::Keyboard::Up:
+    case sf::Keyboard::W:
+      spdlog::debug("processDirectionsMessage: UP {}", direction.UP);
+      direction.UP = (downPress) ? true : false;
+      spdlog::debug("processDirectionsMessage: UP {}", direction.UP);
+      break;
+    case sf::Keyboard::Down:
+    case sf::Keyboard::S:
+      spdlog::debug("processDirectionsMessage: DOWN {}", direction.DOWN);
+      direction.DOWN = (downPress) ? true : false;
+      spdlog::debug("processDirectionsMessage: DOWN {}", direction.DOWN);
+      break;
+    default:
+      break;
+    }
+
+
+    mDirMap[id] = direction;
   }
-
-  mDirMap[5] = direction;
 }
 
 void EntityManager::update()
 {
-  auto &direction = mDirMap[5];
 
-  float deltax = 0.0;
-  float deltay = 0.0;
-  bool diffed = false;
+  for (auto &[id, direction] : mDirMap) {
 
-  if (direction.LEFT) {
-    diffed = true;
-    deltax += -5;
-  }
-  if (direction.RIGHT) {
-    diffed = true;
-    deltax += 5;
-  }
-  if (direction.UP) {
-    diffed = true;
-    deltay += -5;
-  }
-  if (direction.DOWN) {
-    diffed = true;
-    deltay += 5;
-  }
+    // spdlog::debug("update: UP {}", direction.UP);
+    // spdlog::debug("update: DOWN {}", direction.DOWN);
+    // spdlog::debug("update: LEFT {}", direction.LEFT);
+    // spdlog::debug("update: RIGHT {}", direction.RIGHT);
 
-  if (diffed) {
-    updatePos(5, deltax, deltay);
+    const auto DELTA_MAG = 1;
+
+    float deltax = 0.0;
+    float deltay = 0.0;
+    bool diffed = false;
+
+    if (direction.LEFT) {
+      diffed = true;
+      deltax += -DELTA_MAG;
+    }
+    if (direction.RIGHT) {
+      diffed = true;
+      deltax += DELTA_MAG;
+    }
+    if (direction.UP) {
+      diffed = true;
+      deltay += -DELTA_MAG;
+    }
+    if (direction.DOWN) {
+      diffed = true;
+      deltay += DELTA_MAG;
+    }
+
+    if (diffed) {
+      updatePos(id, deltax, deltay);
+    }
   }
 }
 

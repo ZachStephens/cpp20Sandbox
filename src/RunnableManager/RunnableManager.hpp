@@ -10,7 +10,7 @@ class RunnableManager
 {
 protected:
   std::shared_ptr<ThreadCom::ThreadCommunicator<ThreadCom::commMsg>> mThreadComm;
-
+  std::deque<std::unique_ptr<ThreadCom::commMsg>> mRequestQueue;
 
 public:
   RunnableManager(std::shared_ptr<ThreadCom::ThreadCommunicator<ThreadCom::commMsg>> threadComm);

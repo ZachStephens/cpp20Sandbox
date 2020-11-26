@@ -4,6 +4,7 @@
 #include "EntityManager/EntityManager.hpp"
 #include <SFML/Window/Keyboard.hpp>
 
+
 namespace clman {
 
 
@@ -28,13 +29,46 @@ void CoreLogicManager::waitForDependencies()
 }
 
 
+void CoreLogicManager::readMessages(const std::unique_ptr<ThreadCom::commMsg> &&msg)
+{
+  auto messageBytes = msg.get()->getBytes();
+
+  if (messageBytes.size() < 2) {
+    return;// error
+  }
+
+  auto buttonPressed = (messageBytes[0]);
+  auto key = static_cast<sf::Keyboard::Key>(messageBytes[1]);
+
+  mEntityManager.processDirectionsMessage(buttonPressed, key);
+}
+
+void CoreLogicManager::coreLogicHandler(std::unique_ptr<ThreadCom::commMsg> msg)
+{
+  mRequestQueue.push_back(std::move(msg));
+}
+
 void CoreLogicManager::update()
 {
+
+  while (!mRequestQueue.empty()) {
+    readMessages(std::move(mRequestQueue.front()));
+    mRequestQueue.pop_front();
+  }
+
+
+  // for (const auto &item : mEntityManager.mPosMap) {
+  //   auto guiRequest = gman::guiManRequest(
+  //     item.first,
+  //     std::get<0>(item.second),
+  //     std::get<1>(item.second),
+  //     true);
+  //   mGuiRequester->ship(mGuiManagerId, guiRequest);
+  // }
+
   mEntityManager.update();
 
-  const auto &posMap = mEntityManager.mPosMap;
-
-  for (const auto &item : posMap) {
+  for (const auto &item : mEntityManager.mPosMap) {
     auto guiRequest = gman::guiManRequest(
       item.first,
       std::get<0>(item.second),
@@ -44,26 +78,6 @@ void CoreLogicManager::update()
   }
 }
 
-
-void CoreLogicManager::coreLogicHandler(std::unique_ptr<ThreadCom::commMsg> msg)
-{
-  auto messageBytes = msg.get()->getBytes();
-
-  constexpr uint8_t BUTTON_STATE_IDX = 0;
-  //constexpr uint8_t BUTTON_PRESSED_VALUE = 0;
-
-  auto buttonPressed = (messageBytes[BUTTON_STATE_IDX]);
-
-
-  sf::Keyboard::Key *keyPtr = reinterpret_cast<sf::Keyboard::Key *>(&messageBytes[1]);
-
-  sf::Keyboard::Key key = *keyPtr;
-
-
-  mEntityManager.processDirectionsMessage(buttonPressed, key);
-}
-
-
 void CoreLogicManager::run()
 {
   using Clock = std::chrono::steady_clock;
@@ -72,13 +86,12 @@ void CoreLogicManager::run()
 
   start = Clock::now();
 
-
   while (!mThreadComm->killFlag) {
 
     now = Clock::now();
     duration = std::chrono::duration_cast<std::chrono::milliseconds>(now - start);
 
-    if (duration.count() >= 25) {
+    if (duration.count() >= 1) {
 
       update();
 
