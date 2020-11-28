@@ -4,7 +4,7 @@
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/System/Clock.hpp>
 #include <SFML/Window/Event.hpp>
-#include <SFML/Graphics/CircleShape.hpp>
+
 
 #include <spdlog/spdlog.h>
 
@@ -49,27 +49,8 @@ GuiManager::GuiManager(std::shared_ptr<ThreadCom::ThreadCommunicator<ThreadCom::
 }
 
 
-void GuiManager::updateShape(const shapeId_t shapeId, const sf::Vector2f &requestedPos, const sf::Color requestedColor)
-{
-
-  if (mShapeCollection.find(shapeId) == mShapeCollection.end()) {
-    mShapeCollection.insert(std::pair<const shapeId_t, std::shared_ptr<sf::Shape>>(shapeId, std::make_shared<sf::CircleShape>(25.f, 5)));
-    //mShapeCollection[shapeId]->setPosition(static_cast<float>(mWindow.getSize().x / 2), static_cast<float>(mWindow.getSize().x / 2));
-    std::cout
-      << "created shape with ID: " << shapeId << "\n";
-  } else {
-
-    auto shapeToDraw = mShapeCollection[shapeId];
-  }
-
-
-  mShapeCollection[shapeId]->setPosition(requestedPos);
-  mShapeCollection[shapeId]->setFillColor(requestedColor);
-}
-
 void GuiManager::commMsgHandler(std::unique_ptr<ThreadCom::commMsg> msg)
 {
-
   msg.get();
 }
 
@@ -82,16 +63,7 @@ void GuiManager::guiRequestMsgHandler(std::unique_ptr<guiManRequest> msg)
 
 void GuiManager::processGuiManRequest(const std::unique_ptr<guiManRequest> &&request)
 {
-  sf::Vector2f requestedPos(request->mPosX, request->mPosY);
-
-  // If transparency flag is requested draw shape with same color as background
-  auto requestedColor = (request->mIsTransparent) ? sf::Color::Black : sf::Color::Green;
-
-  updateShape(request->mShapeId, requestedPos, requestedColor);
-
-  auto shapeToDraw = mShapeCollection[request->mShapeId];
-
-
+  auto shapeToDraw = request->mShape;
   this->mWindow.draw(*shapeToDraw);
 }
 

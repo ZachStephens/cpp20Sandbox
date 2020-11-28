@@ -25,12 +25,11 @@ private:
   ThreadCom::serviceId_t mServiceId;
   ThreadCom::serviceId_t mGuiManagerId;
 
-
   std::shared_ptr<ThreadCom::ThreadCommunicator<gman::guiManRequest>> mGuiRequester;
   // std::mt19937 mGenerator;
   // std::uniform_real_distribution<> mDistrib;
 
-  entman::EntityManager mEntityManager;
+  ent::man::EntityManager mEntityManager;
 
 
   void readMessages(const std::unique_ptr<ThreadCom::commMsg> &&msg);

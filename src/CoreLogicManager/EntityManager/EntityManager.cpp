@@ -1,102 +1,70 @@
+#include <SFML/Graphics/CircleShape.hpp>
+#include <spdlog/spdlog.h>
+
 #include "EntityManager.hpp"
+#include "Entity/Entity.hpp"
 
 #include "GuiManager/Messages/GuiManMessages.hpp"
 #include "ThreadCommunicator/Messages/ThreadCommMessages.hpp"
-#include <spdlog/spdlog.h>
 
 
-namespace entman {
+namespace ent::man {
 
 EntityManager::EntityManager()
 {
 
-  const auto ids = { 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 };
+  const uint8_t ids[] = { 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 };
 
-  for (auto id : ids) {
-    mPosMap.insert(posMapPair_t(id, std::tuple<float, float>(200 + id * 45, 200 + id * 45)));
-    mDirMap.insert(std::pair<gman::shapeId_t, DIRECTIONS_STATE>(id, DIRECTIONS_STATE()));
+  for (const uint8_t id : ids) {
+    auto val = static_cast<float>(50 * id);
+
+    auto shape = std::make_shared<sf::CircleShape>(25.f, 5);
+    shape->setPosition(sf::Vector2f(val, val));
+
+    auto Ent = Entity(shape);
+    mEntityCollection.insert(std::pair<const gman::shapeId_t, Entity>(id, Ent));
   }
 }
 
 
-inline void EntityManager::boundsCheck(float &x, const float MAX_N_MAG)
+std::unique_ptr<std::vector<std::shared_ptr<sf::Shape>>> EntityManager::getShapesToWrite()
 {
-  if (x >= MAX_N_MAG) {
-    x = MAX_N_MAG;
-  } else if (x <= 0) {
-    x = 0;
+  auto shapesToWrite = std::make_unique<std::vector<std::shared_ptr<sf::Shape>>>();
+  for (const auto mapEntry : mEntityCollection) {
+    auto shapeToWrite = mapEntry.second.getShape();
+    shapesToWrite->push_back(shapeToWrite);
   }
-}
-
-void EntityManager::updatePos(const gman::shapeId_t id, const float deltaX, const float deltaY)
-{
-  float xpos, ypos;
-  std::tie(xpos, ypos) = mPosMap[id];
-
-  auto newXpos = xpos + deltaX;
-  auto newYpos = ypos + deltaY;
-
-  boundsCheck(newXpos, MAX_X_MAG);
-  boundsCheck(newYpos, MAX_Y_MAG);
-
-  mPosMap[id] = std::tuple<float, float>(newXpos, newYpos);
+  return shapesToWrite;
 }
 
 
 void EntityManager::processDirectionsMessage(bool downPress, const sf::Keyboard::Key &key)
 {
 
-  for (auto &[id, direction] : mDirMap) {
+  spdlog::set_level(spdlog::level::info);
 
-    //spdlog::debug("processDirectionsMessage: PRESSED: {}, key: {}", downPress, key);
+  for (const auto mapEntry : mEntityCollection) {
+    auto entity = mapEntry.second;
 
-
-    switch (key) {
-    case sf::Keyboard::Left:
-    case sf::Keyboard::A:
-      spdlog::debug("processDirectionsMessage: LEFT {}", direction.LEFT);
-      direction.LEFT = (downPress) ? true : false;
-      spdlog::debug("processDirectionsMessage: LEFT {}", direction.LEFT);
-      break;
-    case sf::Keyboard::Right:
-    case sf::Keyboard::D:
-      spdlog::debug("processDirectionsMessage: RIGHT {}", direction.RIGHT);
-      direction.RIGHT = (downPress) ? true : false;
-      spdlog::debug("processDirectionsMessage: RIGHT {}", direction.RIGHT);
-      break;
-    case sf::Keyboard::Up:
-    case sf::Keyboard::W:
-      spdlog::debug("processDirectionsMessage: UP {}", direction.UP);
-      direction.UP = (downPress) ? true : false;
-      spdlog::debug("processDirectionsMessage: UP {}", direction.UP);
-      break;
-    case sf::Keyboard::Down:
-    case sf::Keyboard::S:
-      spdlog::debug("processDirectionsMessage: DOWN {}", direction.DOWN);
-      direction.DOWN = (downPress) ? true : false;
-      spdlog::debug("processDirectionsMessage: DOWN {}", direction.DOWN);
-      break;
-    default:
-      break;
-    }
-
-
-    mDirMap[id] = direction;
+    entity.processDirectionsMessage(downPress, key);
   }
 }
+
 
 void EntityManager::update()
 {
 
-  for (auto &[id, direction] : mDirMap) {
+  for (const auto mapEntry : mEntityCollection) {
+    auto entity = mapEntry.second;
 
+    auto direction = entity.getDirection();
     // spdlog::debug("update: UP {}", direction.UP);
     // spdlog::debug("update: DOWN {}", direction.DOWN);
     // spdlog::debug("update: LEFT {}", direction.LEFT);
     // spdlog::debug("update: RIGHT {}", direction.RIGHT);
 
-    const auto DELTA_MAG = 1;
 
+    const auto DELTA_MAG = 5;
     float deltax = 0.0;
     float deltay = 0.0;
     bool diffed = false;
@@ -119,9 +87,9 @@ void EntityManager::update()
     }
 
     if (diffed) {
-      updatePos(id, deltax, deltay);
+      entity.updatePos(deltax, deltay);
     }
   }
 }
 
-}// namespace entman
+}// namespace ent::man

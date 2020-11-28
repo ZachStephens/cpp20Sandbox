@@ -11,10 +11,6 @@ namespace clman {
 CoreLogicManager::CoreLogicManager(std::shared_ptr<ThreadCom::ThreadCommunicator<ThreadCom::commMsg>> threadComm, std::shared_ptr<ThreadCom::ThreadCommunicator<gman::guiManRequest>> guiManRequestComm) : RunnableManager(threadComm), mGuiRequester(guiManRequestComm)
 {
   mServiceId = mThreadComm->registerHandler(std::bind(&CoreLogicManager::coreLogicHandler, this, std::placeholders::_1));
-
-  // std::random_device randdev;
-  // mGenerator = std::mt19937(randdev());
-  // mDistrib = std::uniform_real_distribution<>(-3, 3);
 }
 
 void CoreLogicManager::configGuiManService(const ThreadCom::serviceId_t guiManServiceId)
@@ -56,24 +52,14 @@ void CoreLogicManager::update()
     mRequestQueue.pop_front();
   }
 
-
-  // for (const auto &item : mEntityManager.mPosMap) {
-  //   auto guiRequest = gman::guiManRequest(
-  //     item.first,
-  //     std::get<0>(item.second),
-  //     std::get<1>(item.second),
-  //     true);
-  //   mGuiRequester->ship(mGuiManagerId, guiRequest);
-  // }
-
   mEntityManager.update();
 
-  for (const auto &item : mEntityManager.mPosMap) {
-    auto guiRequest = gman::guiManRequest(
-      item.first,
-      std::get<0>(item.second),
-      std::get<1>(item.second),
-      false);
+  auto shapesToWrite = mEntityManager.getShapesToWrite();
+  while (!shapesToWrite->empty()) {
+    std::shared_ptr<const sf::Shape> shapeToSend(shapesToWrite->back());
+
+    shapesToWrite->pop_back();
+    auto guiRequest = gman::guiManRequest(gman::GUI_COMMAND::WRITE, shapeToSend);
     mGuiRequester->ship(mGuiManagerId, guiRequest);
   }
 }
@@ -91,7 +77,7 @@ void CoreLogicManager::run()
     now = Clock::now();
     duration = std::chrono::duration_cast<std::chrono::milliseconds>(now - start);
 
-    if (duration.count() >= 1) {
+    if (duration.count() >= 5) {
 
       update();
 
