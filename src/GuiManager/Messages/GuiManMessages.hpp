@@ -32,24 +32,6 @@ public:
 };
 
 
-// class guiManResponse : public ThreadCom::commMsg
-// {
-//   //std::vector<uint8_t> bytes;
-// public:
-//   shapeId_t mShapeId;
-
-//   guiManResponse() {}
-
-//   guiManResponse(
-//     shapeId_t shapeId,
-//     float posX,
-//     float posY,
-//     bool isTransparent) : mShapeId(shapeId), mPosX(posX), mPosY(posY), mIsTransparent(isTransparent)
-//   {
-//   }
-// };
-
-
 }// namespace gman
 
 #endif

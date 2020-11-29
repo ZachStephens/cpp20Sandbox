@@ -47,7 +47,7 @@ void Entity::updatePos(const float deltaX, const float deltaY)
 void Entity::processDirectionsMessage(bool downPress, const sf::Keyboard::Key &key)
 {
 
-  spdlog::set_level(spdlog::level::info);
+  //spdlog::set_level(spdlog::level::info);
 
   switch (key) {
   case sf::Keyboard::Left:
@@ -78,6 +78,6 @@ void Entity::processDirectionsMessage(bool downPress, const sf::Keyboard::Key &k
     break;
   }
 
-  spdlog::set_level(spdlog::level::info);
+  //spdlog::set_level(spdlog::level::info);
 }
 }// namespace ent

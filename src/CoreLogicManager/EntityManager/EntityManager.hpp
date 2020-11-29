@@ -15,7 +15,7 @@ namespace ent::man {
 class EntityManager
 {
 private:
-  std::map<gman::shapeId_t, Entity> mEntityCollection;
+  std::map<gman::shapeId_t, std::unique_ptr<Entity>> mEntityCollection;
 
 public:
   std::unique_ptr<std::vector<std::shared_ptr<sf::Shape>>> getShapesToWrite();

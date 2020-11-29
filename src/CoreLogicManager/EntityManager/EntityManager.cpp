@@ -7,6 +7,7 @@
 #include "GuiManager/Messages/GuiManMessages.hpp"
 #include "ThreadCommunicator/Messages/ThreadCommMessages.hpp"
 
+#include <iostream>
 
 namespace ent::man {
 
@@ -21,8 +22,7 @@ EntityManager::EntityManager()
     auto shape = std::make_shared<sf::CircleShape>(25.f, 5);
     shape->setPosition(sf::Vector2f(val, val));
 
-    auto Ent = Entity(shape);
-    mEntityCollection.insert(std::pair<const gman::shapeId_t, Entity>(id, Ent));
+    mEntityCollection.insert(std::pair<const gman::shapeId_t, std::unique_ptr<Entity>>(id, std::make_unique<Entity>(shape)));
   }
 }
 
@@ -30,8 +30,8 @@ EntityManager::EntityManager()
 std::unique_ptr<std::vector<std::shared_ptr<sf::Shape>>> EntityManager::getShapesToWrite()
 {
   auto shapesToWrite = std::make_unique<std::vector<std::shared_ptr<sf::Shape>>>();
-  for (const auto mapEntry : mEntityCollection) {
-    auto shapeToWrite = mapEntry.second.getShape();
+  for (const auto &mapEntry : mEntityCollection) {
+    auto shapeToWrite = mapEntry.second->getShape();
     shapesToWrite->push_back(shapeToWrite);
   }
   return shapesToWrite;
@@ -41,23 +41,23 @@ std::unique_ptr<std::vector<std::shared_ptr<sf::Shape>>> EntityManager::getShape
 void EntityManager::processDirectionsMessage(bool downPress, const sf::Keyboard::Key &key)
 {
 
-  spdlog::set_level(spdlog::level::info);
+  // spdlog::set_level(spdlog::level::debug);
 
-  for (const auto mapEntry : mEntityCollection) {
-    auto entity = mapEntry.second;
+  for (auto &mapEntry : mEntityCollection) {
 
-    entity.processDirectionsMessage(downPress, key);
+    // spdlog::debug("ProcessDirections for {}", mapEntry.first);
+    mapEntry.second->processDirectionsMessage(downPress, key);
   }
+  // spdlog::set_level(spdlog::level::info);
 }
 
 
 void EntityManager::update()
 {
 
-  for (const auto mapEntry : mEntityCollection) {
-    auto entity = mapEntry.second;
+  for (auto &mapEntry : mEntityCollection) {
 
-    auto direction = entity.getDirection();
+    auto direction = mapEntry.second->getDirection();
     // spdlog::debug("update: UP {}", direction.UP);
     // spdlog::debug("update: DOWN {}", direction.DOWN);
     // spdlog::debug("update: LEFT {}", direction.LEFT);
@@ -70,24 +70,28 @@ void EntityManager::update()
     bool diffed = false;
 
     if (direction.LEFT) {
+      spdlog::debug("update: LEFT");
       diffed = true;
       deltax += -DELTA_MAG;
     }
     if (direction.RIGHT) {
+      spdlog::debug("update: RIGHT");
       diffed = true;
       deltax += DELTA_MAG;
     }
     if (direction.UP) {
+      spdlog::debug("update: UP");
       diffed = true;
       deltay += -DELTA_MAG;
     }
     if (direction.DOWN) {
+      spdlog::debug("update: DOWN");
       diffed = true;
       deltay += DELTA_MAG;
     }
 
     if (diffed) {
-      entity.updatePos(deltax, deltay);
+      mapEntry.second->updatePos(deltax, deltay);
     }
   }
 }
