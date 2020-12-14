@@ -18,19 +18,23 @@ class Entity
 private:
   struct DIRECTIONS_STATE
   {
-    bool LEFT = false;
-    bool RIGHT = false;
-    bool UP = false;
-    bool DOWN = false;
+    sf::Vector2f mDirVec = { 0.0, 0.0 };
+    bool LEFT() { return mDirVec.x < 0; }
+    bool RIGHT() { return mDirVec.x > 0; }
+    bool UP() { return mDirVec.y > 0; }
+    bool DOWN() { return mDirVec.y < 0; }
   };
 
   std::shared_ptr<sf::Shape> mShape;
   DIRECTIONS_STATE mDirection;
 
-  void updateShape(const sf::Vector2f &requestedPos, const sf::Color requestedColor);
+  float mMass = 1;
 
 
-  inline void boundsCheck(float &x, const float MAX_N_MAG);
+  void updateShape(const sf::Color requestedColor);
+
+
+  inline void boundsCheck(float &x, float &dir, const float MAX_N_MAG);
 
 public:
   inline const decltype(mShape) getShape() const { return mShape; };
@@ -39,7 +43,14 @@ public:
 
   void updatePos(const float deltaX, const float deltaY);
 
+  void updateDirection(const float deltaX, const float deltaY);
+
   void processDirectionsMessage(bool downPress, const sf::Keyboard::Key &key);
+
+  void applyForce(const sf::Vector2f &vel);
+
+  bool autonomous = true;
+
 
   Entity(std::shared_ptr<sf::Shape> shape);
 };

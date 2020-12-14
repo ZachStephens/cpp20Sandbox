@@ -26,8 +26,6 @@ private:
   ThreadCom::serviceId_t mGuiManagerId;
 
   std::shared_ptr<ThreadCom::ThreadCommunicator<gman::guiManRequest>> mGuiRequester;
-  // std::mt19937 mGenerator;
-  // std::uniform_real_distribution<> mDistrib;
 
   ent::man::EntityManager mEntityManager;
 
