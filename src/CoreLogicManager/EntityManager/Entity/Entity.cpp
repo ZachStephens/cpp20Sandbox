@@ -1,4 +1,6 @@
 #include <SFML/Graphics/CircleShape.hpp>
+#include <SFML/Graphics.hpp>
+
 #include <spdlog/spdlog.h>
 #include "Entity.hpp"
 
@@ -7,21 +9,38 @@ namespace ent {
 
 Entity::Entity(std::shared_ptr<sf::Shape> shape) : mShape(shape)
 {
+
+  sf::Image image;
+
+  image.loadFromFile("/home/zach/work/basic0/cpp_starter_project/src/GuiManager/lone-bison.png");
+
+  // mBackgroundTexture.loadFromImage(image);
+  // auto TextureSize = mBackgroundTexture.getSize();//Get size of texture.
+  // auto localBounds = mShape->getLocalBounds();//Get size of window.
+
+  // auto ScaleX = localBounds.width / static_cast<float>(TextureSize.x);
+  // auto ScaleY = localBounds.height / static_cast<float>(TextureSize.y);//Calculate scale.
+
+  // mShape->setTexture(&mBackgroundTexture);
+  // mShape->setScale(ScaleX, ScaleY);//Set scale.
 }
 
 
-inline void Entity::boundsCheck(float &pos, float &dir, const float MAX_N_MAG)
+inline void Entity::boundsCheck(float &pos, float &dir, const float MIN, const float MAX)
 {
-  if (pos >= MAX_N_MAG) {
-    pos = MAX_N_MAG - (pos - MAX_N_MAG);
+
+  //width is 1920
+
+  if (pos >= MAX) {
+    pos = MAX - (pos - MAX);
     dir *= -1;
-  } else if (pos <= 0) {
-    pos = 0 - pos;
+  } else if (pos <= MIN) {
+    pos = MIN - pos;
     dir *= -1;
   }
 }
 
-void Entity::updateShape(const sf::Color requestedColor)
+void Entity::updateColor(const sf::Color requestedColor)
 {
   mShape->setFillColor(requestedColor);
 }
@@ -44,8 +63,9 @@ void Entity::updatePos(const float deltaX, const float deltaY)
   auto newXpos = pos.x + deltaX;
   auto newYpos = pos.y + deltaY;
 
-  boundsCheck(newXpos, mDirection.mDirVec.x, MAX_X_MAG);
-  boundsCheck(newYpos, mDirection.mDirVec.y, MAX_Y_MAG);
+  auto localBounds = mShape->getLocalBounds();
+  boundsCheck(newXpos, mDirection.mDirVec.x, localBounds.width, MAX_X_MAG - localBounds.width);
+  boundsCheck(newYpos, mDirection.mDirVec.y, 0, MAX_Y_MAG - localBounds.height);
 
 
   sf::Vector2f requestedPos(newXpos, newYpos);
@@ -56,16 +76,17 @@ void Entity::updatePos(const float deltaX, const float deltaY)
 
 void Entity::applyForce(const sf::Vector2f &vel)
 {
-  spdlog::set_level(spdlog::level::debug);
+  spdlog::set_level(spdlog::level::info);
   spdlog::debug("Entity::applyForce oldX: {}, oldY: {}", mDirection.mDirVec.x, mDirection.mDirVec.y);
   spdlog::debug("Entity::applyForce otherX: {}, otherY: {}", vel.x, vel.y);
   //spdlog::error("newX: {}", mass);
-  if (!((vel.x > 0 && mDirection.mDirVec.x > 0) || (vel.x < 0 && mDirection.mDirVec.x < 0))) {
-    mDirection.mDirVec.x = -((vel.x + mDirection.mDirVec.x) / 2);
+
+  if ((vel.x > 0 && mDirection.mDirVec.x < 0) || (vel.x < 0 && mDirection.mDirVec.x > 0)) {
+    mDirection.mDirVec.x = vel.x;
   }
 
-  if (!((vel.y > 0 && mDirection.mDirVec.y > 0) || (vel.y < 0 && mDirection.mDirVec.y < 0))) {
-    mDirection.mDirVec.y = -(vel.y + mDirection.mDirVec.y) / 2;
+  if ((vel.y > 0 && mDirection.mDirVec.y < 0) || (vel.y < 0 && mDirection.mDirVec.y > 0)) {
+    mDirection.mDirVec.y = vel.y;
   }
 
   spdlog::debug("Entity::applyForce newX: {}, newY: {}", mDirection.mDirVec.x, mDirection.mDirVec.y);

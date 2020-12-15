@@ -15,19 +15,26 @@ namespace ent::man {
 EntityManager::EntityManager()
 {
 
-  const uint8_t ids[] = { 5, 6, 7, 8, 9, 10 };
+  std::random_device rd;
+  mGenerator = std::mt19937(rd());
 
-  for (const uint8_t id : ids) {
-    auto val = static_cast<float>(50 * id);
 
-    auto shape = std::make_shared<sf::CircleShape>(25.f, 4);
+  uint8_t i = 1;
+
+  while (i--) {
+    uint16_t id = 1000 - i;
+    //auto val = static_cast<float>(50 * id);
+
+
+    auto shape = std::make_shared<sf::CircleShape>(100.f, 4);
     shape->rotate(45);
-    shape->setPosition(sf::Vector2f(val, val));
-    shape->setFillColor(sf::Color::Green);
+    shape->setPosition(sf::Vector2f(960 + static_cast<float>(960 * (mDistrib(mGenerator) - .5)), 540 + static_cast<float>(540 * (mDistrib(mGenerator) - .5))));
+    //shape->setFillColor(sf::Color::Green);
+
 
     mEntityCollection.insert(std::pair<const gman::shapeId_t, std::unique_ptr<Entity>>(id, std::make_unique<Entity>(shape)));
     if (mEntityCollection[id]->autonomous) {
-      mEntityCollection[id]->updateDirection(static_cast<float>(5 * (mDistrib(mGenerator) - .5)), static_cast<float>(5 * (mDistrib(mGenerator) - .5)));
+      mEntityCollection[id]->updateDirection(static_cast<float>(2 * (mDistrib(mGenerator) - .5)), static_cast<float>(2 * (mDistrib(mGenerator) - .5)));
     }
   }
 }
@@ -95,7 +102,13 @@ void EntityManager::recordCollision(const gman::shapeId_t id1, const gman::shape
   } else {
     collisionMap[id1] = { id2 };
   }
-  mCollisionBufferCounterMap[id1] = 5;
+  mCollisionBufferCounterMap[id1] = 20;
+
+  auto previouslyCollided = mEntityCollection[id2]->getShape()->getFillColor() == sf::Color::Red;
+
+  if (previouslyCollided) {
+    mEntityCollection[id1]->getShape()->setFillColor(sf::Color::Red);
+  }
 }
 
 void EntityManager::handleCollisions(const gman::shapeId_t collider_id, const std::vector<gman::shapeId_t> &collisionsIds, collision_map_t &collisionMap)

@@ -25,7 +25,7 @@ GuiManager::GuiManager(std::shared_ptr<ThreadCom::ThreadCommunicator<ThreadCom::
   std::shared_ptr<ThreadCom::ThreadCommunicator<gman::guiManRequest>> guiManRequestComm) : RunnableManager(threadComm), mGuiRequester(guiManRequestComm)
 {
 
-  this->mWindow.setFramerateLimit(30);
+  this->mWindow.setFramerateLimit(15);
   ImGui::SFML::Init(this->mWindow);
 
   sf::Image image;

@@ -2,6 +2,12 @@
 #define ENTITY
 #include <SFML/Window/Keyboard.hpp>
 
+#include <imgui.h>
+#include <imgui-SFML.h>
+
+#include <SFML/Graphics.hpp>
+
+
 #include "GuiManager/Messages/GuiManMessages.hpp"
 
 #include <map>
@@ -9,8 +15,8 @@
 
 namespace ent {
 
-constexpr auto MAX_X_MAG = 1920 - 50;
-constexpr auto MAX_Y_MAG = 1080 - 50;
+constexpr auto MAX_X_MAG = 1920;
+constexpr auto MAX_Y_MAG = 1080;
 
 
 class Entity
@@ -28,13 +34,17 @@ private:
   std::shared_ptr<sf::Shape> mShape;
   DIRECTIONS_STATE mDirection;
 
+
+  sf::Texture mBackgroundTexture;
+  sf::Sprite mBackground;
+
   float mMass = 1;
 
 
-  void updateShape(const sf::Color requestedColor);
+  void updateColor(const sf::Color requestedColor);
 
 
-  inline void boundsCheck(float &x, float &dir, const float MAX_N_MAG);
+  inline void boundsCheck(float &x, float &dir, const float MIN, const float MAX);
 
 public:
   inline const decltype(mShape) getShape() const { return mShape; };
