@@ -32,6 +32,10 @@ protected:
 template<typename MSG_T>
 using commHandler_t = std::function<void(std::unique_ptr<MSG_T>)>;
 
+template<typename MSG_T>
+using commHandlerVec_t = std::function<void(std::unique_ptr<std::vector<MSG_T>>)>;
+
+
 class pingMsg : public commMsg
 {
 public:

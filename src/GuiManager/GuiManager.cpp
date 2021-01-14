@@ -25,7 +25,7 @@ GuiManager::GuiManager(std::shared_ptr<ThreadCom::ThreadCommunicator<ThreadCom::
   std::shared_ptr<ThreadCom::ThreadCommunicator<gman::guiManRequest>> guiManRequestComm) : RunnableManager(threadComm), mGuiRequester(guiManRequestComm)
 {
 
-  this->mWindow.setFramerateLimit(15);
+  this->mWindow.setFramerateLimit(90);
   ImGui::SFML::Init(this->mWindow);
 
   sf::Image image;
@@ -45,7 +45,7 @@ GuiManager::GuiManager(std::shared_ptr<ThreadCom::ThreadCommunicator<ThreadCom::
 
 
   mServiceId = mThreadComm->registerHandler(std::bind(&GuiManager::commMsgHandler, this, std::placeholders::_1));
-  mGuiRequestHandlerId = mGuiRequester->registerHandler(std::bind(&GuiManager::guiRequestMsgHandler, this, std::placeholders::_1));
+  mGuiRequestHandlerId = mGuiRequester->registerHandler(std::bind(&GuiManager::processGuiManRequest, this, std::placeholders::_1));
 }
 
 
@@ -55,39 +55,66 @@ void GuiManager::commMsgHandler(std::unique_ptr<ThreadCom::commMsg> msg)
 }
 
 
-void GuiManager::guiRequestMsgHandler(std::unique_ptr<guiManRequest> msg)
-{
-  mRequestQueue.push_back(std::move(msg));
-}
+// void GuiManager::guiRequestMsgHandler(std::unique_ptr<guiManRequest> msg)
+// {
+//   // mRequestQueue.push_back(std::move(msg));
+//   auto shapeToDraw = msg->mShape;
+//   this->mWindow.draw(*shapeToDraw);
+// }
 
 
-void GuiManager::processGuiManRequest(const std::unique_ptr<guiManRequest> &&request)
+void GuiManager::processGuiManRequest(std::unique_ptr<std::vector<guiManRequest>> requestVec)
 {
-  auto shapeToDraw = request->mShape;
-  this->mWindow.draw(*shapeToDraw);
+  spdlog::set_level(spdlog::level::info);
+  spdlog::debug("processGuiManRequest start");
+  if (requestVec) {
+    mRequestVecPending.swap(requestVec);
+  } else {
+    mRequestVecPending->clear();
+  }
+
+  spdlog::debug("processGuiManRequest requestVec Moved");
+  spdlog::set_level(spdlog::level::info);
 }
 
 void GuiManager::update()
 {
-  mWindow.clear();
-  mWindow.draw(mBackground);
+  spdlog::set_level(spdlog::level::info);
+
   ImGui::SFML::Update(mWindow, mDeltaClock.restart());
 
-  auto concatted = std::string("Hello, world!, ");
-  ImGui::Begin(concatted.c_str());
-  ImGui::Button("Look at this pretty button");
-  ImGui::End();
-
-  //mWindow.clear();
-
-  while (!mRequestQueue.empty()) {
-    processGuiManRequest(std::move(mRequestQueue.front()));
-    mRequestQueue.pop_front();
+  // Requests of other entities to be drawn are handled as they appear
+  spdlog::debug("Check if pending empty");
+  if (mRequestVecPending && !mRequestVecPending->empty()) {
+    spdlog::debug("Attempt Swap");
+    mRequestVec.swap(mRequestVecPending);
+    spdlog::debug("Move Completed");
   }
 
+  if (mRequestVec && !mRequestVec->empty()) {
+    spdlog::debug("Attempt draw");
+    mWindow.clear();
+    mWindow.draw(mBackground);
+    for (const auto &request : *mRequestVec) {
+      auto shapeToDraw = request.mShape;
+      mWindow.draw(*shapeToDraw);
+    }
+    spdlog::debug("Attempt clear");
+    mRequestVec->clear();
+    spdlog::debug("mRequestVec cleared");
+  }
 
-  ImGui::SFML::Render(mWindow);
-  mWindow.display();
+  spdlog::set_level(spdlog::level::info);
+  // while (!mRequestVec.empty()) {
+  //   processGuiManRequest(std::move(mRequestQueue.front()));
+  //   mRequestVec.pop_front();
+  // }
+  // auto concatted = std::string("Hello, world!, ");
+  // ImGui::Begin(concatted.c_str());
+  // ImGui::Button("Look at this pretty button");
+  // ImGui::End();
+
+  // mWindow.clear();
 }
 
 
@@ -150,10 +177,14 @@ void GuiManager::run()
       }
     }
 
-    //auto elapsed = mDeltaClock.getElapsedTime().asMilliseconds();
-    //if (elapsed > 2) {
-    update();
-    //}
+
+    // clear at regular intervals
+    auto elapsed = mDeltaClock.getElapsedTime().asMilliseconds();
+    if (elapsed > 2) {
+      update();
+      ImGui::SFML::Render(mWindow);
+      mWindow.display();
+    }
   }
 
   ImGui::SFML::Shutdown();

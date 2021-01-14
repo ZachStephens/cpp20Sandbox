@@ -13,7 +13,7 @@
 
 #include <memory>
 #include <functional>
-#include <deque>
+#include <vector>
 
 #include "Messages/GuiManMessages.hpp"
 
@@ -27,7 +27,8 @@ class GuiManager : public RunnableManager
 {
 
 private:
-  std::deque<std::unique_ptr<guiManRequest>> mRequestQueue;
+  std::unique_ptr<std::vector<guiManRequest>> mRequestVec = std::make_unique<std::vector<guiManRequest>>(std::vector<guiManRequest>());
+  std::unique_ptr<std::vector<guiManRequest>> mRequestVecPending = std::make_unique<std::vector<guiManRequest>>(std::vector<guiManRequest>());
 
   std::shared_ptr<ThreadCom::ThreadCommunicator<guiManRequest>> mGuiRequester;
   ThreadCom::serviceId_t mGuiRequestHandlerId;
@@ -39,7 +40,7 @@ private:
 
   sf::RenderWindow mWindow = sf::RenderWindow(sf::VideoMode(1920, 1080), "Test IMGUI Project");
 
-  void processGuiManRequest(const std::unique_ptr<guiManRequest> &&request);
+  void processGuiManRequest(std::unique_ptr<std::vector<guiManRequest>> requestVec);
 
 
   void updateShape(const shapeId_t shapeId, const sf::Vector2f &requestedPos, const sf::Color requestedColor);

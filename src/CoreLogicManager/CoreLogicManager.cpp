@@ -55,13 +55,15 @@ void CoreLogicManager::update()
   mEntityManager.update();
 
   auto shapesToWrite = mEntityManager.getShapesToWrite();
+  std::vector<gman::guiManRequest> guiRequestVec;
   while (!shapesToWrite->empty()) {
     std::shared_ptr<const sf::Shape> shapeToSend(shapesToWrite->back());
 
     shapesToWrite->pop_back();
     auto guiRequest = gman::guiManRequest(gman::GUI_COMMAND::WRITE, shapeToSend);
-    mGuiRequester->ship(mGuiManagerId, guiRequest);
+    guiRequestVec.push_back(guiRequest);
   }
+  mGuiRequester->shipVec(mGuiManagerId, guiRequestVec);
 }
 
 void CoreLogicManager::run()
@@ -77,7 +79,7 @@ void CoreLogicManager::run()
     now = Clock::now();
     duration = std::chrono::duration_cast<std::chrono::milliseconds>(now - start);
 
-    if (duration.count() >= 2) {
+    if (duration.count() >= 30) {
 
       update();
 

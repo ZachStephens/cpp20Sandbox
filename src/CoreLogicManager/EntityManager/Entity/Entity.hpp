@@ -51,6 +51,7 @@ public:
 
   inline const decltype(mDirection) getDirection() const { return mDirection; };
 
+
   void updatePos(const float deltaX, const float deltaY);
 
   void updateDirection(const float deltaX, const float deltaY);

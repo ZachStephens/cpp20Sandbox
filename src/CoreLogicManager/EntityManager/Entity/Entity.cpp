@@ -1,6 +1,8 @@
 #include <SFML/Graphics/CircleShape.hpp>
 #include <SFML/Graphics.hpp>
 
+#include <SFML/OpenGL.hpp>
+
 #include <spdlog/spdlog.h>
 #include "Entity.hpp"
 
@@ -14,15 +16,15 @@ Entity::Entity(std::shared_ptr<sf::Shape> shape) : mShape(shape)
 
   image.loadFromFile("/home/zach/work/basic0/cpp_starter_project/src/GuiManager/lone-bison.png");
 
-  // mBackgroundTexture.loadFromImage(image);
-  // auto TextureSize = mBackgroundTexture.getSize();//Get size of texture.
-  // auto localBounds = mShape->getLocalBounds();//Get size of window.
+  mBackgroundTexture.loadFromImage(image);
+  //auto TextureSize = mBackgroundTexture.getSize();//Get size of texture.
+  //auto localBounds = mShape->getLocalBounds();//Get size of window.
 
   // auto ScaleX = localBounds.width / static_cast<float>(TextureSize.x);
   // auto ScaleY = localBounds.height / static_cast<float>(TextureSize.y);//Calculate scale.
 
-  // mShape->setTexture(&mBackgroundTexture);
-  // mShape->setScale(ScaleX, ScaleY);//Set scale.
+  mShape->setTexture(&mBackgroundTexture);
+  //mShape->setScale(ScaleX, ScaleY);//Set scale.
 }
 
 
@@ -30,14 +32,26 @@ inline void Entity::boundsCheck(float &pos, float &dir, const float MIN, const f
 {
 
   //width is 1920
-
+  spdlog::set_level(spdlog::level::info);
   if (pos >= MAX) {
-    pos = MAX - (pos - MAX);
-    dir *= -1;
+    //pos = MAX - (pos - MAX);
+    //make dir negative
+
+    auto curPos = mShape->getPosition();
+    spdlog::debug("posX: {}, posY: {}", curPos.x, curPos.y);
+    spdlog::debug("dirX: {}, dirY: {}", mDirection.mDirVec.x, mDirection.mDirVec.y);
+    dir = (dir > 0) ? dir * -1 : dir;
+    spdlog::debug("dirX: {}, dirY: {}", mDirection.mDirVec.x, mDirection.mDirVec.y);
   } else if (pos <= MIN) {
-    pos = MIN - pos;
-    dir *= -1;
+    //pos = MIN - pos;
+    //make dir positive
+    auto curPos = mShape->getPosition();
+    spdlog::debug("posX: {}, posY: {}", curPos.x, curPos.y);
+    spdlog::debug("dirX: {}, dirY: {}", mDirection.mDirVec.x, mDirection.mDirVec.y);
+    dir = (dir < 0) ? dir * -1 : dir;
+    spdlog::debug("dirX: {}, dirY: {}", mDirection.mDirVec.x, mDirection.mDirVec.y);
   }
+  spdlog::set_level(spdlog::level::info);
 }
 
 void Entity::updateColor(const sf::Color requestedColor)
@@ -64,8 +78,8 @@ void Entity::updatePos(const float deltaX, const float deltaY)
   auto newYpos = pos.y + deltaY;
 
   auto localBounds = mShape->getLocalBounds();
-  boundsCheck(newXpos, mDirection.mDirVec.x, localBounds.width, MAX_X_MAG - localBounds.width);
-  boundsCheck(newYpos, mDirection.mDirVec.y, 0, MAX_Y_MAG - localBounds.height);
+  boundsCheck(newXpos, mDirection.mDirVec.x, 0, MAX_X_MAG);
+  boundsCheck(newYpos, mDirection.mDirVec.y, 0 - localBounds.height / 2, MAX_Y_MAG - localBounds.height);
 
 
   sf::Vector2f requestedPos(newXpos, newYpos);

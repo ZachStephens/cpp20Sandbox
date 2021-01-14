@@ -1,4 +1,6 @@
 #include <SFML/Graphics/CircleShape.hpp>
+// #include <SFML/Graphics/Color.hpp>
+
 #include <spdlog/spdlog.h>
 
 #include "EntityManager.hpp"
@@ -6,6 +8,7 @@
 
 #include "GuiManager/Messages/GuiManMessages.hpp"
 #include "ThreadCommunicator/Messages/ThreadCommMessages.hpp"
+
 
 #include <iostream>
 
@@ -19,22 +22,28 @@ EntityManager::EntityManager()
   mGenerator = std::mt19937(rd());
 
 
-  uint8_t i = 1;
+  uint16_t i = 2;
 
   while (i--) {
-    uint16_t id = 1000 - i;
+    uint16_t id = 30000 - i;
     //auto val = static_cast<float>(50 * id);
 
 
     auto shape = std::make_shared<sf::CircleShape>(100.f, 4);
-    shape->rotate(45);
-    shape->setPosition(sf::Vector2f(960 + static_cast<float>(960 * (mDistrib(mGenerator) - .5)), 540 + static_cast<float>(540 * (mDistrib(mGenerator) - .5))));
-    //shape->setFillColor(sf::Color::Green);
+    // shape->rotate(45);
+    shape->setPosition(sf::Vector2f(960 + static_cast<float>(1920 * (mDistrib(mGenerator) - .5)), 540 + static_cast<float>(1080 * (mDistrib(mGenerator) - .5))));
+
+    auto r = static_cast<uint8_t>(mDistrib(mGenerator) * 255);
+    auto g = static_cast<uint8_t>(mDistrib(mGenerator) * 255);
+    auto b = static_cast<uint8_t>(mDistrib(mGenerator) * 255);
+    uint8_t a = static_cast<uint8_t>(0xFF);//static_cast<uint8_t>(mDistrib(mGenerator) * 255);
+    shape->setFillColor(sf::Color({ .red = r, .green = g, .blue = b, .alpha = a }));
 
 
     mEntityCollection.insert(std::pair<const gman::shapeId_t, std::unique_ptr<Entity>>(id, std::make_unique<Entity>(shape)));
     if (mEntityCollection[id]->autonomous) {
-      mEntityCollection[id]->updateDirection(static_cast<float>(2 * (mDistrib(mGenerator) - .5)), static_cast<float>(2 * (mDistrib(mGenerator) - .5)));
+      float floatSpeed = 15.0;
+      mEntityCollection[id]->updateDirection(floatSpeed * static_cast<float>((mDistrib(mGenerator) - .5)), floatSpeed * static_cast<float>((mDistrib(mGenerator) - .5)));
     }
   }
 }
@@ -69,10 +78,10 @@ const std::vector<gman::shapeId_t> EntityManager::collisionCheck(const gman::sha
   auto sh = mEntityCollection[id]->getShape();
   auto bounds = sh->getGlobalBounds();
 
-  auto pos = sh->getPosition();
+  // auto pos = sh->getPosition();
 
-  spdlog::debug("id: {}, top: {}, left: {}, height: {}, width: {}", id, bounds.top, bounds.left, bounds.height, bounds.width);
-  spdlog::debug("id: {}, posX: {}, posY", id, pos.x, pos.y);
+  // spdlog::debug("id: {}, top: {}, left: {}, height: {}, width: {}", id, bounds.top, bounds.left, bounds.height, bounds.width);
+  // spdlog::debug("id: {}, posX: {}, posY", id, pos.x, pos.y);
 
 
   bounds.top += diffLocation.y;
@@ -133,15 +142,13 @@ void EntityManager::handleCollisions(const gman::shapeId_t collider_id, const st
 void EntityManager::update()
 {
 
-  collision_map_t colMap;
-
-  for (auto it = mCollisionBufferCounterMap.begin(); it != mCollisionBufferCounterMap.end();) {
-    if ((--(it->second)) == 0) {
-      mCollisionBufferCounterMap.erase(it++);// or "it = m.erase(it)" since C++11
-    } else {
-      ++it;
-    }
-  }
+  // for (auto it = mCollisionBufferCounterMap.begin(); it != mCollisionBufferCounterMap.end();) {
+  //   if ((--(it->second)) == 0) {
+  //     mCollisionBufferCounterMap.erase(it++);// or "it = m.erase(it)" since C++11
+  //   } else {
+  //     ++it;
+  //   }
+  // }
 
   for (auto &mapEntry : mEntityCollection) {
     auto direction = mapEntry.second->getDirection();
@@ -151,22 +158,24 @@ void EntityManager::update()
     float deltax = DELTA_MAG * direction.mDirVec.x;
     float deltay = DELTA_MAG * direction.mDirVec.y;
 
-    spdlog::set_level(spdlog::level::debug);
+    //   spdlog::set_level(spdlog::level::info);
 
-    auto diffVec = sf::Vector2f(deltax, deltay);
-    auto collisions = collisionCheck(mapEntry.first, diffVec);
-    if (collisions.empty()) {
+    //   auto diffVec = sf::Vector2f(deltax, deltay);
+    //   auto collisions = collisionCheck(mapEntry.first, diffVec);
+    //   collision_map_t colMap;
 
-      mapEntry.second->updatePos(deltax, deltay);
+    //   if (collisions.empty()) {
 
-    } else {
+    mapEntry.second->updatePos(deltax, deltay);
 
-      spdlog::debug("Handling collisions");
-      handleCollisions(mapEntry.first, collisions, colMap);
-    }
-    // }
-    spdlog::set_level(spdlog::level::info);
+    //   } else {
+
+    //     spdlog::debug("Handling collisions");
+    //     handleCollisions(mapEntry.first, collisions, colMap);
+    //   }
   }
+  spdlog::set_level(spdlog::level::info);
 }
+
 
 }// namespace ent::man
