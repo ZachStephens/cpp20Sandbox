@@ -2,6 +2,8 @@
 #define ENTITY_MANAGER
 
 #include <SFML/Window/Keyboard.hpp>
+#include <SFML/Graphics.hpp>
+
 
 #include "GuiManager/Messages/GuiManMessages.hpp"
 #include "Entity/Entity.hpp"
@@ -17,25 +19,40 @@ using collision_map_t = std::map<gman::shapeId_t, std::set<gman::shapeId_t>>;
 class EntityManager
 {
 private:
-  std::map<gman::shapeId_t, std::unique_ptr<Entity>> mEntityCollection;
-  std::map<gman::shapeId_t, uint8_t> mCollisionBufferCounterMap;
+  using SFML_ENTITY = Entity<sf::Shape, sf::Vector2f>;
+  using SFML_ENTITY_PTR = std::unique_ptr<SFML_ENTITY>;
+
+  std::map<gman::shapeId_t, SFML_ENTITY_PTR> mEntityCollection;
+
+  sf::Texture mEntityTexture;
 
   std::mt19937 mGenerator;
   std::uniform_real_distribution<> mDistrib;
 
-  void recordCollision(const gman::shapeId_t id1, const gman::shapeId_t id2, collision_map_t &collisionMap);
 
-  void handleCollisions(const gman::shapeId_t id, const std::vector<gman::shapeId_t> &collisionsIds, collision_map_t &collisionMap);
+  void findCollisions(const gman::shapeId_t &id, collision_map_t &collisionRecord);
 
-  const std::vector<gman::shapeId_t> collisionCheck(const gman::shapeId_t &id, const sf::Vector2<float> &diffLocation);
+  void processCollisions(collision_map_t &collisionRecord);
 
+  void configureEntity(
+    const uint16_t id,
+    const float floatSpeed,
+    const float size,
+    const sf::Texture &texture,
+    const sf::Vector2f &initPos);
+
+  void clearState();
+
+  void init();
 
 public:
   std::unique_ptr<std::vector<std::shared_ptr<sf::Shape>>> getShapesToWrite();
 
   EntityManager();
 
-  void processDirectionsMessage(bool downPress, const sf::Keyboard::Key &key);
+  void reset();
+
+  void processVelocityMessage(bool downPress, const sf::Keyboard::Key &key);
 
   void update();
 };

@@ -160,7 +160,7 @@ void GuiManager::run()
 {
   //ImGui::SFML::Update(mWindow, mDeltaClock.restart());
   mWindow.setKeyRepeatEnabled(false);
-  mWindow.draw(mBackground);
+  // mWindow.draw(mBackground);
   while (mWindow.isOpen()) {
     sf::Event event;
     while (mWindow.pollEvent(event)) {

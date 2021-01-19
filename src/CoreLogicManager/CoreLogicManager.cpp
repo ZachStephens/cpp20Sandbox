@@ -36,7 +36,12 @@ void CoreLogicManager::readMessages(const std::unique_ptr<ThreadCom::commMsg> &&
   auto buttonPressed = (messageBytes[0]);
   auto key = static_cast<sf::Keyboard::Key>(messageBytes[1]);
 
-  mEntityManager.processDirectionsMessage(buttonPressed, key);
+  if (key == sf::Keyboard::F5) {
+    mEntityManager.reset();
+    return;
+  }
+
+  mEntityManager.processVelocityMessage(buttonPressed, key);
 }
 
 void CoreLogicManager::coreLogicHandler(std::unique_ptr<ThreadCom::commMsg> msg)

@@ -1,12 +1,12 @@
 # imgui test executable, with full warnings enabled
 project(Entity CXX)
 
-add_library(Entity STATIC  Entity.hpp Entity.cpp)
+add_library(Entity INTERFACE  Entity.hpp IEntity.hpp)
 
-target_include_directories(Entity PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${SRC_ROOT})
+target_include_directories(Entity INTERFACE ${CMAKE_CURRENT_SOURCE_DIR} ${SRC_ROOT})
 
 target_link_libraries(Entity
-    PUBLIC  project_warnings 
+    INTERFACE  project_warnings 
             project_options 
             CONAN_PKG::docopt.cpp
             CONAN_PKG::fmt
