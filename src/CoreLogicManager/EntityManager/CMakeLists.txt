@@ -2,6 +2,7 @@
 project(EntityManager CXX)
 
 add_subdirectory(Entity)
+add_subdirectory(CollisionManager)
 
 add_library(EntityManager STATIC  EntityManager.hpp EntityManager.cpp)
 
@@ -9,6 +10,7 @@ target_include_directories(EntityManager PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${SR
 
 target_link_libraries(EntityManager
     PUBLIC  Entity
+            CollisionManager
             project_warnings 
             project_options 
             CONAN_PKG::docopt.cpp

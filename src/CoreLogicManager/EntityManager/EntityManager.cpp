@@ -20,7 +20,8 @@ void EntityManager::configureEntity(
   const float floatSpeed,
   const float size,
   const sf::Texture &texture,
-  const sf::Vector2f &initPos)
+  const sf::Vector2f &initPos,
+  const bool fixed)
 {
 
   auto shape = std::make_shared<sf::RectangleShape>(sf::Vector2f(size, size));
@@ -31,7 +32,7 @@ void EntityManager::configureEntity(
 
   const auto initVel = sf::Vector2f(floatSpeed * static_cast<float>((mDistrib(mGenerator) - .5)), floatSpeed * static_cast<float>((mDistrib(mGenerator) - .5)));
 
-  mEntityCollection.insert(std::pair<const gman::shapeId_t, SFML_ENTITY_PTR>(id, std::make_unique<SFML_ENTITY>(shape, initVel)));
+  mEntityCollection.insert(std::pair<const gman::shapeId_t, SFML_ENTITY_PTR>(id, std::make_unique<SFML_ENTITY>(shape, initVel, fixed)));
 }
 
 void EntityManager::init()
@@ -43,23 +44,42 @@ void EntityManager::init()
 
   image.loadFromFile("/home/zach/work/basic0/cpp_starter_project/src/GuiManager/lone-bison.png");
 
-  mEntityTexture.loadFromImage(image);
-  mEntityTexture.setSmooth(true);
+  mBisonTexture.loadFromImage(image);
+  mBisonTexture.setSmooth(true);
 
-  uint16_t i = 15;
+  uint16_t i = 1;
 
-  const uint16_t id = 30000 - i;
-  const float floatSpeed = 5.0;
-  const float size = 170;
-  configureEntity(id, floatSpeed, size, mEntityTexture);
 
-  while (i-- > 4) {
+  float floatSpeed = 0.0;
+  uint16_t size = 100;
+
+
+  // build border
+  for (uint16_t pos = 0; pos < 1920; pos += size) {
+    configureEntity(i++, floatSpeed, size, mDefaultTexture, sf::Vector2f(static_cast<float>(pos), -static_cast<float>(size)), true);//top
+    mCollisionManager.mTopIds.insert(i);
+    configureEntity(i++, floatSpeed, size, mDefaultTexture, sf::Vector2f(static_cast<float>(pos), 1080), true);//bottom
+    mCollisionManager.mBottomIds.insert(i);
+  }
+
+  for (uint16_t pos = 0; pos < 1080; pos += size) {
+    configureEntity(i++, floatSpeed, size, mDefaultTexture, sf::Vector2f(-static_cast<float>(size), static_cast<float>(pos)), true);//left
+    mCollisionManager.mLeftIds.insert(i);
+    configureEntity(i++, floatSpeed, size, mDefaultTexture, sf::Vector2f(1920, static_cast<float>(pos)), true);//right
+    mCollisionManager.mRightIds.insert(i);
+  }
+
+  // configureEntity(2, floatSpeed, size, mDefaultTexture, sf::Vector2f(-1920, 0), true);//left
+  // configureEntity(3, floatSpeed, size, mDefaultTexture, sf::Vector2f(1920, 0), true);//right
+  // configureEntity(4, floatSpeed, size, mDefaultTexture, sf::Vector2f(0, 1920), true);//bottom
+
+  while (i++ < 200) {
     const uint16_t id = 30000 - i;
-    const float floatSpeed = 5.0;
-    const float size = 170;
-    const auto initPos = sf::Vector2f(960 + static_cast<float>(1850 * (mDistrib(mGenerator) - .5)), 540 + static_cast<float>(1000 * (mDistrib(mGenerator) - .5)));
+    floatSpeed = 1.0;
+    size = 40;
+    auto initPos = sf::Vector2f(960 + static_cast<float>(1850 * (mDistrib(mGenerator) - .5)), 540 + static_cast<float>(1000 * (mDistrib(mGenerator) - .5)));
 
-    configureEntity(id, floatSpeed, size, mEntityTexture, initPos);
+    configureEntity(id, floatSpeed, size, mBisonTexture, initPos, false);
   }
 }
 
@@ -71,7 +91,7 @@ EntityManager::EntityManager()
 void EntityManager::clearState()
 {
   mEntityCollection.clear();
-  mEntityTexture = {};
+  mBisonTexture = {};
 }
 
 void EntityManager::reset()
@@ -104,73 +124,19 @@ void EntityManager::processVelocityMessage(bool downPress, const sf::Keyboard::K
   // spdlog::set_level(spdlog::level::info);
 }
 
-float magnitude(const sf::Vector2f &vec)
-{
-  return static_cast<float>(std::sqrt(std::pow(vec.x, 2) + std::pow(vec.y, 2)));
-}
-
-sf::Vector2f unitVector(const float xComponent, const float yComponent, const float mag)
-{
-  return sf::Vector2f(xComponent / mag, yComponent / mag);
-}
-
-
-void EntityManager::findCollisions(const gman::shapeId_t &id, collision_map_t &collisionRecord)
-{
-  auto &entity = *mEntityCollection[id];
-
-
-  for (const auto &entry : mEntityCollection) {
-    if (entry.first != id) {
-
-      auto &otherEntity = *entry.second;
-
-      if (entity.intersects(otherEntity)) {
-        collisionRecord.insert({ id, { entry.first } });
-      }
-    }
-  }
-}
-
-void EntityManager::processCollisions(collision_map_t &collisionRecord)
-{
-  spdlog::set_level(spdlog::level::debug);
-  for (auto &collider : collisionRecord) {
-
-    auto id = collider.first;
-    auto &entity = *mEntityCollection[id];
-    auto centerPos = entity.getCenterPosition();
-
-    for (const auto otherId : collider.second) {
-
-
-      auto &otherEntity = *mEntityCollection[otherId];
-      auto otherCenterPos = otherEntity.getCenterPosition();
-
-      auto vecToOther = otherCenterPos - centerPos;
-      auto mag = magnitude(vecToOther);
-      auto unitVec = unitVector(vecToOther.x, vecToOther.y, mag);
-
-      entity.mPendingVelocity += -(unitVec / static_cast<float>(2));
-      spdlog::debug("collision");
-
-      collisionRecord[otherId].erase(id);
-    }
-    collider.second.clear();
-  }
-  spdlog::set_level(spdlog::level::info);
-}
 
 void EntityManager::update()
 {
 
-  collision_map_t collisionRecord;
+  col::collision_map_t<gman::shapeId_t> collisionRecord;
 
   for (auto &mapEntry : mEntityCollection) {
-    findCollisions(mapEntry.first, collisionRecord);
+    if (!mapEntry.second->mFixed) {
+      mCollisionManager.findCollisions(mapEntry.first, collisionRecord, mEntityCollection);
+    }
   }
 
-  processCollisions(collisionRecord);
+  mCollisionManager.processCollisions(collisionRecord, mEntityCollection);
 
   for (auto &mapEntry : mEntityCollection) {
     auto &entity = *mapEntry.second;

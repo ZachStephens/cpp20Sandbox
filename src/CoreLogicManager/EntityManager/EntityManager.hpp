@@ -7,14 +7,13 @@
 
 #include "GuiManager/Messages/GuiManMessages.hpp"
 #include "Entity/Entity.hpp"
+#include "CollisionManager/CollisionManager.hpp"
 
 #include <map>
 #include <set>
 #include <stdint.h>
 #include <random>
 namespace ent::man {
-
-using collision_map_t = std::map<gman::shapeId_t, std::set<gman::shapeId_t>>;
 
 class EntityManager
 {
@@ -23,25 +22,26 @@ private:
   using SFML_ENTITY_PTR = std::unique_ptr<SFML_ENTITY>;
 
   std::map<gman::shapeId_t, SFML_ENTITY_PTR> mEntityCollection;
+  col::CollisionManager<decltype(mEntityCollection), gman::shapeId_t> mCollisionManager;
 
-  sf::Texture mEntityTexture;
+
+  sf::Texture mBisonTexture;
+  sf::Texture mDefaultTexture;
 
   std::mt19937 mGenerator;
   std::uniform_real_distribution<> mDistrib;
 
-
-  void findCollisions(const gman::shapeId_t &id, collision_map_t &collisionRecord);
-
-  void processCollisions(collision_map_t &collisionRecord);
 
   void configureEntity(
     const uint16_t id,
     const float floatSpeed,
     const float size,
     const sf::Texture &texture,
-    const sf::Vector2f &initPos);
+    const sf::Vector2f &initPos,
+    const bool fixed);
 
-  void clearState();
+  void
+    clearState();
 
   void init();
 

@@ -27,6 +27,7 @@ class Entity : public IEntity<SHAPE_T, VECT_T>
 private:
   float mMass = 1;
 
+
   std::shared_ptr<SHAPE_T> mShape;
 
 
@@ -64,6 +65,8 @@ private:
 
 public:
   VECT_T mPendingVelocity;
+
+  bool mFixed = false;
   VECT_T mVelocity;
   bool autonomous = true;
 
@@ -104,7 +107,9 @@ public:
 
 
     VECT_T requestedPos(newXpos, newYpos);
-    mShape->setPosition(requestedPos);
+    if (!mFixed) {
+      mShape->setPosition(requestedPos);
+    }
   }
 
   void updateVelocity() override
@@ -149,12 +154,11 @@ public:
     const auto boundary = mShape->getGlobalBounds();
     const auto otherBoundary = otherEntity.getShape()->getGlobalBounds();
 
-    return (boundary.intersects(otherBoundary));
+    return boundary.intersects(otherBoundary);
   }
 
-  Entity(std::shared_ptr<SHAPE_T> shape, VECT_T initVel) : mShape(shape)
+  Entity(std::shared_ptr<SHAPE_T> shape, VECT_T initVel, const bool fixed) : mShape(shape), mPendingVelocity(initVel), mFixed(fixed)
   {
-    mPendingVelocity = initVel;
     updateVelocity();
   }
 };
