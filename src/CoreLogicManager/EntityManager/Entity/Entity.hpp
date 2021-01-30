@@ -15,7 +15,7 @@
 #include <map>
 #include <stdint.h>
 
-namespace ent {
+namespace ent::base {
 
 constexpr auto MAX_X_MAG = 1920;
 constexpr auto MAX_Y_MAG = 1080;
@@ -25,12 +25,6 @@ template<typename SHAPE_T, typename VECT_T>
 class Entity : public IEntity<SHAPE_T, VECT_T>
 {
 private:
-  float mMass = 1;
-
-
-  std::shared_ptr<SHAPE_T> mShape;
-
-
   void updateColor(const sf::Color requestedColor)
   {
     mShape->setFillColor(requestedColor);
@@ -61,12 +55,16 @@ private:
     }
     spdlog::set_level(spdlog::level::info);
   }
+  float mMass = 1;
+
+protected:
+  std::shared_ptr<SHAPE_T> mShape;
 
 
 public:
+  bool mFixed = false;
   VECT_T mPendingVelocity;
 
-  bool mFixed = false;
   VECT_T mVelocity;
   bool autonomous = true;
 
@@ -107,9 +105,8 @@ public:
 
 
     VECT_T requestedPos(newXpos, newYpos);
-    if (!mFixed) {
-      mShape->setPosition(requestedPos);
-    }
+
+    mShape->setPosition(requestedPos);
   }
 
   void updateVelocity() override
@@ -157,13 +154,13 @@ public:
     return boundary.intersects(otherBoundary);
   }
 
-  Entity(std::shared_ptr<SHAPE_T> shape, VECT_T initVel, const bool fixed) : mShape(shape), mPendingVelocity(initVel), mFixed(fixed)
+  Entity(std::shared_ptr<SHAPE_T> shape, VECT_T initVel) : mShape(shape), mPendingVelocity(initVel)
   {
     updateVelocity();
   }
 };
 
 
-}// namespace ent
+}// namespace ent::base
 
 #endif

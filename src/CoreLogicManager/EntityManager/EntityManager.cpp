@@ -5,6 +5,7 @@
 
 #include "EntityManager.hpp"
 #include "Entity/Entity.hpp"
+#include "Entity/FixedEntity.hpp"
 
 #include "GuiManager/Messages/GuiManMessages.hpp"
 #include "ThreadCommunicator/Messages/ThreadCommMessages.hpp"
@@ -15,8 +16,7 @@
 namespace ent::man {
 
 
-void EntityManager::configureEntity(
-  const uint16_t id,
+uint16_t EntityManager::configureEntity(
   const float floatSpeed,
   const float size,
   const sf::Texture &texture,
@@ -32,7 +32,35 @@ void EntityManager::configureEntity(
 
   const auto initVel = sf::Vector2f(floatSpeed * static_cast<float>((mDistrib(mGenerator) - .5)), floatSpeed * static_cast<float>((mDistrib(mGenerator) - .5)));
 
-  mEntityCollection.insert(std::pair<const gman::shapeId_t, SFML_ENTITY_PTR>(id, std::make_unique<SFML_ENTITY>(shape, initVel, fixed)));
+  auto latestId = ++mEntityId;
+
+
+  if (fixed) {
+    SFML_ENTITY_PTR fixedEnt = std::make_unique<SFML_FIXED_ENTITY>(shape);
+    mEntityCollection.insert(std::pair<const gman::shapeId_t, SFML_ENTITY_PTR>(latestId, std::move(fixedEnt)));
+  } else {
+    mEntityCollection.insert(std::pair<const gman::shapeId_t, SFML_ENTITY_PTR>(latestId, std::make_unique<SFML_ENTITY>(shape, initVel)));
+  }
+
+  return latestId;
+}
+
+
+void EntityManager::configureBorder(const uint16_t width, const uint16_t height)
+{
+  float floatSpeed = 0.0;
+  uint16_t size = 100;
+
+  // build border
+  for (uint16_t pos = 0; pos < width; pos += size) {
+    mCollisionManager.mTopIds.insert(configureEntity(floatSpeed, size, mDefaultTexture, sf::Vector2f(static_cast<float>(pos), -static_cast<float>(size)), true));//top
+    mCollisionManager.mBottomIds.insert(configureEntity(floatSpeed, size, mDefaultTexture, sf::Vector2f(static_cast<float>(pos), height), true));//bottom
+  }
+
+  for (uint16_t pos = 0; pos < height; pos += size) {
+    mCollisionManager.mLeftIds.insert(configureEntity(floatSpeed, size, mDefaultTexture, sf::Vector2f(-static_cast<float>(size), static_cast<float>(pos)), true));//left
+    mCollisionManager.mRightIds.insert(configureEntity(floatSpeed, size, mDefaultTexture, sf::Vector2f(width, static_cast<float>(pos)), true));//right
+  }
 }
 
 void EntityManager::init()
@@ -47,39 +75,15 @@ void EntityManager::init()
   mBisonTexture.loadFromImage(image);
   mBisonTexture.setSmooth(true);
 
-  uint16_t i = 1;
-
-
-  float floatSpeed = 0.0;
-  uint16_t size = 100;
-
 
   // build border
-  for (uint16_t pos = 0; pos < 1920; pos += size) {
-    configureEntity(i++, floatSpeed, size, mDefaultTexture, sf::Vector2f(static_cast<float>(pos), -static_cast<float>(size)), true);//top
-    mCollisionManager.mTopIds.insert(i);
-    configureEntity(i++, floatSpeed, size, mDefaultTexture, sf::Vector2f(static_cast<float>(pos), 1080), true);//bottom
-    mCollisionManager.mBottomIds.insert(i);
-  }
+  configureBorder(1920, 1080);
 
-  for (uint16_t pos = 0; pos < 1080; pos += size) {
-    configureEntity(i++, floatSpeed, size, mDefaultTexture, sf::Vector2f(-static_cast<float>(size), static_cast<float>(pos)), true);//left
-    mCollisionManager.mLeftIds.insert(i);
-    configureEntity(i++, floatSpeed, size, mDefaultTexture, sf::Vector2f(1920, static_cast<float>(pos)), true);//right
-    mCollisionManager.mRightIds.insert(i);
-  }
-
-  // configureEntity(2, floatSpeed, size, mDefaultTexture, sf::Vector2f(-1920, 0), true);//left
-  // configureEntity(3, floatSpeed, size, mDefaultTexture, sf::Vector2f(1920, 0), true);//right
-  // configureEntity(4, floatSpeed, size, mDefaultTexture, sf::Vector2f(0, 1920), true);//bottom
-
+  uint16_t i = 0;
   while (i++ < 200) {
-    const uint16_t id = 30000 - i;
-    floatSpeed = 1.0;
-    size = 40;
     auto initPos = sf::Vector2f(960 + static_cast<float>(1850 * (mDistrib(mGenerator) - .5)), 540 + static_cast<float>(1000 * (mDistrib(mGenerator) - .5)));
 
-    configureEntity(id, floatSpeed, size, mBisonTexture, initPos, false);
+    configureEntity(1.0, 40, mBisonTexture, initPos, false);
   }
 }
 

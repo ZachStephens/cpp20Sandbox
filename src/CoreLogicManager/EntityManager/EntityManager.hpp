@@ -7,6 +7,7 @@
 
 #include "GuiManager/Messages/GuiManMessages.hpp"
 #include "Entity/Entity.hpp"
+#include "Entity/FixedEntity.hpp"
 #include "CollisionManager/CollisionManager.hpp"
 
 #include <map>
@@ -18,8 +19,10 @@ namespace ent::man {
 class EntityManager
 {
 private:
-  using SFML_ENTITY = Entity<sf::Shape, sf::Vector2f>;
+  using SFML_ENTITY = ent::base::Entity<sf::Shape, sf::Vector2f>;
+  using SFML_FIXED_ENTITY = ent::base::fixed::FixedEntity<sf::Shape, sf::Vector2f>;
   using SFML_ENTITY_PTR = std::unique_ptr<SFML_ENTITY>;
+  using SFML_FIXED_ENTITY_PTR = std::unique_ptr<SFML_FIXED_ENTITY>;
 
   std::map<gman::shapeId_t, SFML_ENTITY_PTR> mEntityCollection;
   col::CollisionManager<decltype(mEntityCollection), gman::shapeId_t> mCollisionManager;
@@ -31,17 +34,19 @@ private:
   std::mt19937 mGenerator;
   std::uniform_real_distribution<> mDistrib;
 
+  uint16_t mEntityId = 0;
 
-  void configureEntity(
-    const uint16_t id,
+
+  uint16_t configureEntity(
     const float floatSpeed,
     const float size,
     const sf::Texture &texture,
     const sf::Vector2f &initPos,
     const bool fixed);
 
-  void
-    clearState();
+  void configureBorder(const uint16_t width, const uint16_t height);
+
+  void clearState();
 
   void init();
 

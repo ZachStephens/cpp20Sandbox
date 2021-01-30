@@ -1,7 +1,7 @@
 # imgui test executable, with full warnings enabled
 project(Entity CXX)
 
-add_library(Entity INTERFACE  Entity.hpp IEntity.hpp)
+add_library(Entity INTERFACE  FixedEntity.hpp Entity.hpp IEntity.hpp)
 
 target_include_directories(Entity INTERFACE ${CMAKE_CURRENT_SOURCE_DIR} ${SRC_ROOT})
 

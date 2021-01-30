@@ -10,6 +10,8 @@
 
 #include "GuiManager/Messages/GuiManMessages.hpp"
 
+namespace ent {
+
 template<typename SHAPE_T, typename VECT_T>
 class IEntity
 {
@@ -33,4 +35,5 @@ public:
   virtual ~IEntity(){};
 };
 
+}// namespace ent
 #endif
