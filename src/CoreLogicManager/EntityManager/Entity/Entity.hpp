@@ -30,31 +30,6 @@ private:
     mShape->setFillColor(requestedColor);
   }
 
-  inline void boundsCheck(float &pos, float &dir, const float MIN, const float MAX)
-  {
-
-    //width is 1920
-    spdlog::set_level(spdlog::level::info);
-    if (pos >= MAX) {
-      //pos = MAX - (pos - MAX);
-      //make dir negative
-
-      auto curPos = mShape->getPosition();
-      spdlog::debug("posX: {}, posY: {}", curPos.x, curPos.y);
-      spdlog::debug("dirX: {}, dirY: {}", mVelocity.x, mVelocity.y);
-      dir = (dir > 0) ? dir * -1 : dir;
-      spdlog::debug("dirX: {}, dirY: {}", mVelocity.x, mVelocity.y);
-    } else if (pos <= MIN) {
-      //pos = MIN - pos;
-      //make dir positive
-      auto curPos = mShape->getPosition();
-      spdlog::debug("posX: {}, posY: {}", curPos.x, curPos.y);
-      spdlog::debug("dirX: {}, dirY: {}", mVelocity.x, mVelocity.y);
-      dir = (dir < 0) ? dir * -1 : dir;
-      spdlog::debug("dirX: {}, dirY: {}", mVelocity.x, mVelocity.y);
-    }
-    spdlog::set_level(spdlog::level::info);
-  }
   float mMass = 1;
 
 protected:
@@ -99,11 +74,6 @@ public:
     auto newXpos = pos.x + mVelocity.x;
     auto newYpos = pos.y + mVelocity.y;
 
-    auto localBounds = mShape->getLocalBounds();
-    boundsCheck(newXpos, mVelocity.x, 0, MAX_X_MAG - localBounds.width);
-    boundsCheck(newYpos, mVelocity.y, 0, MAX_Y_MAG - localBounds.height);
-
-
     VECT_T requestedPos(newXpos, newYpos);
 
     mShape->setPosition(requestedPos);
@@ -111,8 +81,7 @@ public:
 
   void updateVelocity() override
   {
-    mVelocity = mPendingVelocity;
-    // mPendingVelocity = {};
+    mVelocity = mPendingVelocity;// *= static_cast<float>(.995);
   }
 
   void processVelocityMessage(bool downPress, const sf::Keyboard::Key &key) override

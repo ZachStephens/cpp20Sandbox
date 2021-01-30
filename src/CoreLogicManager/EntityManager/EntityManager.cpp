@@ -49,7 +49,7 @@ uint16_t EntityManager::configureEntity(
 void EntityManager::configureBorder(const uint16_t width, const uint16_t height)
 {
   float floatSpeed = 0.0;
-  uint16_t size = 100;
+  uint16_t size = 250;
 
   // build border
   for (uint16_t pos = 0; pos < width; pos += size) {
@@ -80,10 +80,11 @@ void EntityManager::init()
   configureBorder(1920, 1080);
 
   uint16_t i = 0;
-  while (i++ < 200) {
+  const float size = 76;
+  while (i++ < 20) {
     auto initPos = sf::Vector2f(960 + static_cast<float>(1850 * (mDistrib(mGenerator) - .5)), 540 + static_cast<float>(1000 * (mDistrib(mGenerator) - .5)));
 
-    configureEntity(1.0, 40, mBisonTexture, initPos, false);
+    configureEntity(1.0, size, mBisonTexture, initPos, false);
   }
 }
 
@@ -135,6 +136,8 @@ void EntityManager::update()
   col::collision_map_t<gman::shapeId_t> collisionRecord;
 
   for (auto &mapEntry : mEntityCollection) {
+    mapEntry.second->mPendingVelocity *= static_cast<float>(.99);
+    mapEntry.second->mPendingVelocity.y += static_cast<float>(1);
     if (!mapEntry.second->mFixed) {
       mCollisionManager.findCollisions(mapEntry.first, collisionRecord, mEntityCollection);
     }
