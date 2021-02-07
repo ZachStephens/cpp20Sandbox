@@ -21,13 +21,9 @@ namespace ent::base::fixed {
 template<typename SHAPE_T, typename VECT_T>
 class FixedEntity : public Entity<SHAPE_T, VECT_T>
 {
+private:
 public:
   inline const std::shared_ptr<SHAPE_T> getShape() const override { return this->mShape; };
-
-
-  void autoInit()
-  {
-  }
 
   const VECT_T getCenterPosition() const override
   {
@@ -88,18 +84,26 @@ public:
     spdlog::set_level(spdlog::level::info);
   }
 
-  bool intersects(const IEntity<SHAPE_T, VECT_T> &otherFixedEntity) const override
+  bool intersects(const sf::FloatRect &otherBoundary) const override
   {
     const auto boundary = this->mShape->getGlobalBounds();
-    const auto otherBoundary = otherFixedEntity.getShape()->getGlobalBounds();
 
     return boundary.intersects(otherBoundary);
   }
 
   FixedEntity(std::shared_ptr<SHAPE_T> shape) : Entity<SHAPE_T, VECT_T>(shape, { 0.0, 0.0 })
   {
-    this->mFixed = true;
   }
+};
+
+template<typename SHAPE_T, typename VECT_T>
+class FixedXEntity : public FixedEntity<SHAPE_T, VECT_T>
+{
+};
+
+template<typename SHAPE_T, typename VECT_T>
+class FixedYEntity : public FixedEntity<SHAPE_T, VECT_T>
+{
 };
 
 

@@ -31,31 +31,47 @@ private:
     return sf::Vector2f(xComponent / mag, yComponent / mag);
   }
 
-  template<typename VECT>
-  VECT processBorderCollisions(const KEY_T otherId, VECT pendingVel)
-  {
-    auto [xVel, yVel] = pendingVel;
-    // auto xVel = pendingVel.x;
+  // template<typename ENT_T>
+  // void processBorderCollision(ENT_T entity)
+  // {
+  //   auto topBounds = borderEntity.getTopBounds();
+  //   auto bottomBounds = borderEntity.getBottomBounds();
+  //   auto leftBounds = borderEntity.getLeftBounds();
+  //   auto rightBounds = borderEntity.getRightBounds();
 
-    if (mBottomIds.find(otherId) != mBottomIds.end()) {
-      pendingVel.y *= 0;//(yVel > 0) ? -1 : 1;
 
-    } else if (mTopIds.find(otherId) != mTopIds.end()) {
-      pendingVel.y *= (yVel > 0) ? 1 : -1;
+  //   bool collideTop = (entity.intersects(topBounds));
+  //   bool collideLeft = (entity.intersects(leftBounds));
+  //   bool collideBottom = (entity.intersects(bottomBounds));
+  //   bool collideRight = (entity.intersects(rightBounds));
 
-    } else if (mLeftIds.find(otherId) != mLeftIds.end()) {
-      pendingVel.x *= (xVel > 0) ? 1 : -1;
 
-    } else if (mRightIds.find(otherId) != mRightIds.end()) {
-      pendingVel.x *= (xVel > 0) ? -1 : 1;
-    }
-    return pendingVel;
-  }
+  //   if (collideLeft) {
+  //     entity.mPendingVelocity.x += -entity.mPendingVelocity.x - 1;
+  //   } else if (collideRight) {
+  //     entity.mPendingVelocity.x += -entity.mPendingVelocity.x + 1;
+  //   }
+
+
+  //   if (collideTop) {
+  //     entity.mPendingVelocity.y += -entity.mPendingVelocity.y - 1;
+  //   } else if (collideBottom) {
+  //     entity.mPendingVelocity.y += -entity.mPendingVelocity.y + 1;
+  //   }
+  // }
 
   template<typename ENT_T>
-  void processStandardCollision(ENT_T entity, ENT_T otherEntity)
+  void processCollision(ENT_T entity, ENT_T otherEntity)
   {
-    auto centerPos = entity.getCenterPosition();
+
+
+    const auto centerPos = entity.getCenterPosition();
+    const auto entVelocity = entity.getVelocity();
+    const auto entMass = entity.getMass();
+
+    //
+    auto opposingForce = otherEntity.applyMomentum(centerPos, entVelocity, entMass);
+
     auto otherCenterPos = otherEntity.getCenterPosition();
 
     auto vecToOther = otherCenterPos - centerPos;
@@ -66,10 +82,6 @@ private:
   }
 
 public:
-  std::set<KEY_T> mLeftIds;
-  std::set<KEY_T> mRightIds;
-  std::set<KEY_T> mTopIds;
-  std::set<KEY_T> mBottomIds;
   CollisionManager(){};
 
   void findCollisions(const KEY_T &id, collision_map_t<KEY_T> &collisionRecord, CollidableCollection &colliders)
@@ -82,7 +94,7 @@ public:
 
         auto &otherEntity = *entry.second;
 
-        if (entity.intersects(otherEntity)) {
+        if (entity.intersects(otherEntity.getShape()->getGlobalBounds())) {
           collisionRecord.insert({ id, { entry.first } });
         }
       }
@@ -102,12 +114,8 @@ public:
 
         auto &otherEntity = *colliders[otherId];
 
-
-        if (otherEntity.mFixed) {
-          entity.mPendingVelocity = processBorderCollisions<decltype(entity.mPendingVelocity)>(otherId, entity.mPendingVelocity);
-        } else {
-          processStandardCollision<decltype(entity)>(entity, otherEntity);
-        }
+        using ENTITY_T = decltype(entity);
+        processCollision<ENTITY_T>(entity, otherEntity);
 
         // spdlog::debug("collision");
 

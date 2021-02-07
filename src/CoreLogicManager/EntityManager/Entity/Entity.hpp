@@ -33,11 +33,15 @@ private:
   float mMass = 1;
 
 protected:
+  const sf::FloatRect mTopBounds, mBottomBounds, mLeftBounds, mRightBounds;
   std::shared_ptr<SHAPE_T> mShape;
 
+  void initTopBounds() {}
+  void initBottomBounds() {}
+  void initLeftBounds() {}
+  void initRightBounds() {}
 
 public:
-  bool mFixed = false;
   VECT_T mPendingVelocity;
 
   VECT_T mVelocity;
@@ -46,9 +50,13 @@ public:
   inline const std::shared_ptr<SHAPE_T> getShape() const override { return mShape; };
 
 
-  void autoInit()
-  {
-  }
+  [[nodiscard]] const sf::FloatRect &getTopBounds() const override { return mTopBounds; }
+
+  [[nodiscard]] const sf::FloatRect &getBottomBounds() const override { return mBottomBounds; }
+
+  [[nodiscard]] const sf::FloatRect &getLeftBounds() const override { return mLeftBounds; }
+
+  [[nodiscard]] const sf::FloatRect &getRightBounds() const override { return mRightBounds; }
 
   const VECT_T getCenterPosition() const override
   {
@@ -67,6 +75,25 @@ public:
     // mShape->setScale(ScaleX, ScaleY);//Set scale.
   }
 
+  void forceXPos(const float newXpos)
+  {
+    VECT_T requestedPos(newXpos, mShape->getPosition().y);
+    mShape->setPosition(requestedPos);
+  }
+
+  void forceYPos(const float newYpos)
+  {
+    VECT_T requestedPos(mShape->getPosition().x, newYpos);
+    mShape->setPosition(requestedPos);
+  }
+
+
+  void forcePos(const float newXpos, const float newYpos)
+  {
+    VECT_T requestedPos(newXpos, newYpos);
+    mShape->setPosition(requestedPos);
+  }
+
   void updatePos() override
   {
     auto pos = mShape->getPosition();
@@ -74,10 +101,9 @@ public:
     auto newXpos = pos.x + mVelocity.x;
     auto newYpos = pos.y + mVelocity.y;
 
-    VECT_T requestedPos(newXpos, newYpos);
-
-    mShape->setPosition(requestedPos);
+    forcePos(newXpos, newYpos);
   }
+
 
   void updateVelocity() override
   {
@@ -115,10 +141,9 @@ public:
     spdlog::set_level(spdlog::level::info);
   }
 
-  bool intersects(const IEntity<SHAPE_T, VECT_T> &otherEntity) const override
+  bool intersects(const sf::FloatRect &otherBoundary) const override
   {
     const auto boundary = mShape->getGlobalBounds();
-    const auto otherBoundary = otherEntity.getShape()->getGlobalBounds();
 
     return boundary.intersects(otherBoundary);
   }

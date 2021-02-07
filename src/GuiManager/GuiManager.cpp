@@ -28,6 +28,9 @@ GuiManager::GuiManager(std::shared_ptr<ThreadCom::ThreadCommunicator<ThreadCom::
   this->mWindow.setFramerateLimit(90);
   ImGui::SFML::Init(this->mWindow);
 
+  this->mWindow.setActive(false);
+
+
   sf::Image image;
 
   image.loadFromFile("/home/zach/Pictures/bison.jpeg");
@@ -159,9 +162,14 @@ void GuiManager::onKeyReleased(const sf::Keyboard::Key key)
 void GuiManager::run()
 {
   //ImGui::SFML::Update(mWindow, mDeltaClock.restart());
+
+  // Running in new thread.  Any other threads must set window to inactive
+  mWindow.setActive(true);
+
   mWindow.setKeyRepeatEnabled(false);
-  // mWindow.draw(mBackground);
+
   while (mWindow.isOpen()) {
+    spdlog::set_level(spdlog::level::debug);
     sf::Event event;
     while (mWindow.pollEvent(event)) {
       ImGui::SFML::ProcessEvent(event);
@@ -181,6 +189,7 @@ void GuiManager::run()
     // clear at regular intervals
     auto elapsed = mDeltaClock.getElapsedTime().asMilliseconds();
     if (elapsed > 2) {
+
       update();
       ImGui::SFML::Render(mWindow);
       mWindow.display();

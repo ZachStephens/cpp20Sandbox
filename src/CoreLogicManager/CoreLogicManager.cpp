@@ -84,7 +84,7 @@ void CoreLogicManager::run()
     now = Clock::now();
     duration = std::chrono::duration_cast<std::chrono::milliseconds>(now - start);
 
-    if (duration.count() >= 30) {
+    if (duration.count() >= 10) {
 
       update();
 
