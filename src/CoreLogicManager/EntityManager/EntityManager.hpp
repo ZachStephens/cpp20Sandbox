@@ -20,11 +20,11 @@ class EntityManager
 {
 private:
   using SFML_ENTITY = ent::base::Entity<sf::Shape, sf::Vector2f>;
-  using SFML_FIXED_ENTITY = ent::base::fixed::FixedEntity<sf::Shape, sf::Vector2f>;
-  using SFML_XFIXED_ENTITY = ent::base::fixed::FixedEntity<sf::Shape, sf::Vector2f>;
-  using SFML_YFIXED_ENTITY = ent::base::fixed::FixedEntity<sf::Shape, sf::Vector2f>;
+  using SFML_LEFTFIXED_ENTITY = ent::base::fixed::FixedXEntity<sf::Shape, sf::Vector2f, -1>;
+  using SFML_RIGHTFIXED_ENTITY = ent::base::fixed::FixedXEntity<sf::Shape, sf::Vector2f, 1>;
+  using SFML_UPFIXED_ENTITY = ent::base::fixed::FixedYEntity<sf::Shape, sf::Vector2f, 1>;
+  using SFML_DOWNFIXED_ENTITY = ent::base::fixed::FixedYEntity<sf::Shape, sf::Vector2f, 1>;
   using SFML_ENTITY_PTR = std::unique_ptr<SFML_ENTITY>;
-  using SFML_FIXED_ENTITY_PTR = std::unique_ptr<SFML_FIXED_ENTITY>;
 
   std::map<gman::shapeId_t, SFML_ENTITY_PTR> mEntityCollection;
   col::CollisionManager<decltype(mEntityCollection), gman::shapeId_t> mCollisionManager;
@@ -49,6 +49,8 @@ private:
     const sf::Texture &texture,
     const sf::Vector2f &initPos);
 
+
+  template<class BORDER_T>
   uint16_t configureBorderEntity(
     const float size,
     const sf::Texture &texture,

@@ -29,6 +29,7 @@ std::shared_ptr<sf::Shape> EntityManager::initShape(const float size,
 }
 
 
+template<class BORDER_T>
 uint16_t EntityManager::configureBorderEntity(
   const float size,
   const sf::Texture &texture,
@@ -44,10 +45,10 @@ uint16_t EntityManager::configureBorderEntity(
   // xyDirection == true -> configure horizontal border entity (xFixedEntity)
   // else create vertical border entity
   if (xyDirection) {
-    SFML_ENTITY_PTR fixedEnt = std::make_unique<SFML_XFIXED_ENTITY>(shape);
+    SFML_ENTITY_PTR fixedEnt = std::make_unique<BORDER_T>(shape);
     mEntityCollection.insert(std::pair<const gman::shapeId_t, SFML_ENTITY_PTR>(latestId, std::move(fixedEnt)));
   } else {
-    SFML_ENTITY_PTR fixedEnt = std::make_unique<SFML_YFIXED_ENTITY>(shape);
+    SFML_ENTITY_PTR fixedEnt = std::make_unique<BORDER_T>(shape);
     mEntityCollection.insert(std::pair<const gman::shapeId_t, SFML_ENTITY_PTR>(latestId, std::move(fixedEnt)));
   }
 
@@ -79,20 +80,21 @@ uint16_t EntityManager::configureEntity(
   return latestId;
 }
 
-
 void EntityManager::configureBorder(const uint16_t width, const uint16_t height)
 {
   uint16_t size = 1920;
 
   // build border
   for (uint16_t pos = 0; pos < width; pos += size) {
-    configureBorderEntity(size, mDefaultTexture, sf::Vector2f(static_cast<float>(pos), -static_cast<float>(size)), false);//top
-    configureBorderEntity(size, mDefaultTexture, sf::Vector2f(static_cast<float>(pos), height), false);//bottom
+    using namespace ent::base::fixed;
+    configureBorderEntity<FixedYEntity<sf::Shape, sf::Vector2f, 1>>(size, mDefaultTexture, sf::Vector2f(static_cast<float>(pos), -static_cast<float>(size)), false);//top
+    configureBorderEntity<FixedYEntity<sf::Shape, sf::Vector2f, -1>>(size, mDefaultTexture, sf::Vector2f(static_cast<float>(pos), height), false);//bottom
   }
 
   for (uint16_t pos = 0; pos < height; pos += size) {
-    configureBorderEntity(size, mDefaultTexture, sf::Vector2f(-static_cast<float>(size), static_cast<float>(pos)), true);//left
-    configureBorderEntity(size, mDefaultTexture, sf::Vector2f(width, static_cast<float>(pos)), true);//right
+    using namespace ent::base::fixed;
+    configureBorderEntity<FixedXEntity<sf::Shape, sf::Vector2f, 1>>(size, mDefaultTexture, sf::Vector2f(-static_cast<float>(size), static_cast<float>(pos)), true);//left
+    configureBorderEntity<FixedXEntity<sf::Shape, sf::Vector2f, -1>>(size, mDefaultTexture, sf::Vector2f(width, static_cast<float>(pos)), true);//right
   }
 }
 
@@ -113,8 +115,8 @@ void EntityManager::init()
   configureBorder(1920, 1080);
 
   uint16_t i = 0;
-  const float size = 30;
-  while (i++ < 60) {
+  const float size = 50;
+  while (i++ < 10) {
     auto initPos = sf::Vector2f(960 + static_cast<float>(1850 * (mDistrib(mGenerator) - .5)), 540 + static_cast<float>(1000 * (mDistrib(mGenerator) - .5)));
 
     configureEntity(1.0, size, mBisonTexture, initPos);

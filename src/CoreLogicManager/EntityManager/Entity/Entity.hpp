@@ -45,6 +45,7 @@ public:
   VECT_T mPendingVelocity;
 
   VECT_T mVelocity;
+
   bool autonomous = true;
 
   inline const std::shared_ptr<SHAPE_T> getShape() const override { return mShape; };
@@ -57,6 +58,20 @@ public:
   [[nodiscard]] const sf::FloatRect &getLeftBounds() const override { return mLeftBounds; }
 
   [[nodiscard]] const sf::FloatRect &getRightBounds() const override { return mRightBounds; }
+
+  [[nodiscard]] const decltype(mMass) &getMass() const { return mMass; }
+
+  virtual void applyMomentum(const VECT_T momentum)
+  {
+    auto currentMomentum = mVelocity * mMass;
+    auto totalMomentum = momentum + currentMomentum;
+    mPendingVelocity += totalMomentum / mMass;
+  }
+
+  virtual void applyScale(VECT_T &velToScale)
+  {
+    velToScale *= static_cast<float>(1);
+  }
 
   const VECT_T getCenterPosition() const override
   {

@@ -31,54 +31,16 @@ private:
     return sf::Vector2f(xComponent / mag, yComponent / mag);
   }
 
-  // template<typename ENT_T>
-  // void processBorderCollision(ENT_T entity)
-  // {
-  //   auto topBounds = borderEntity.getTopBounds();
-  //   auto bottomBounds = borderEntity.getBottomBounds();
-  //   auto leftBounds = borderEntity.getLeftBounds();
-  //   auto rightBounds = borderEntity.getRightBounds();
-
-
-  //   bool collideTop = (entity.intersects(topBounds));
-  //   bool collideLeft = (entity.intersects(leftBounds));
-  //   bool collideBottom = (entity.intersects(bottomBounds));
-  //   bool collideRight = (entity.intersects(rightBounds));
-
-
-  //   if (collideLeft) {
-  //     entity.mPendingVelocity.x += -entity.mPendingVelocity.x - 1;
-  //   } else if (collideRight) {
-  //     entity.mPendingVelocity.x += -entity.mPendingVelocity.x + 1;
-  //   }
-
-
-  //   if (collideTop) {
-  //     entity.mPendingVelocity.y += -entity.mPendingVelocity.y - 1;
-  //   } else if (collideBottom) {
-  //     entity.mPendingVelocity.y += -entity.mPendingVelocity.y + 1;
-  //   }
-  // }
 
   template<typename ENT_T>
   void processCollision(ENT_T entity, ENT_T otherEntity)
   {
 
+    auto otherEntVelocity = otherEntity.getVelocity();
+    const auto otherEntMass = otherEntity.getMass();
 
-    const auto centerPos = entity.getCenterPosition();
-    const auto entVelocity = entity.getVelocity();
-    const auto entMass = entity.getMass();
-
-    //
-    auto opposingForce = otherEntity.applyMomentum(centerPos, entVelocity, entMass);
-
-    auto otherCenterPos = otherEntity.getCenterPosition();
-
-    auto vecToOther = otherCenterPos - centerPos;
-    auto mag = magnitude(vecToOther);
-    auto unitVec = unitVector(vecToOther.x, vecToOther.y, mag);
-    entity.mPendingVelocity += -(unitVec / static_cast<float>(2));
-    otherEntity.mPendingVelocity += (unitVec / static_cast<float>(2));
+    otherEntity.applyScale(entity.mPendingVelocity);
+    entity.applyMomentum(otherEntMass * otherEntVelocity);
   }
 
 public:
@@ -119,7 +81,7 @@ public:
 
         // spdlog::debug("collision");
 
-        collisionRecord[otherId].erase(id);
+        // collisionRecord[otherId].erase(id);
       }
       collider.second.clear();
     }

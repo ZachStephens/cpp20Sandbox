@@ -9,6 +9,7 @@
 
 #include <SFML/Graphics.hpp>
 
+#include <spdlog/spdlog.h>
 
 #include "GuiManager/Messages/GuiManMessages.hpp"
 
@@ -32,6 +33,16 @@ public:
   }
 
   inline const VECT_T getVelocity() const override { return VECT_T(0.0, 0.0); };
+
+  virtual void applyMomentum(const VECT_T momentum) override
+  {
+    this->mPendingVelocity += momentum;
+  }
+
+  virtual void applyScale(VECT_T &velToScale)
+  {
+    velToScale *= static_cast<float>(1);
+  }
 
   void setTexture(const sf::Texture &texture)
   {
@@ -96,14 +107,42 @@ public:
   }
 };
 
-template<typename SHAPE_T, typename VECT_T>
+// 1 = left; -1 = right
+template<typename SHAPE_T, typename VECT_T, int DIR = 1>
 class FixedXEntity : public FixedEntity<SHAPE_T, VECT_T>
 {
+public:
+  void applyScale(VECT_T &velToScale) override
+  {
+    spdlog::info("collide X with DIR {}", DIR);
+    if (velToScale.x * DIR < 0) {
+      spdlog::info("negate x vel");
+      velToScale.x *= -1;
+    }
+  }
+
+  FixedXEntity(std::shared_ptr<SHAPE_T> shape) : FixedEntity<SHAPE_T, VECT_T>(shape)
+  {
+  }
 };
 
-template<typename SHAPE_T, typename VECT_T>
+// 1 = top; -1 = bottom
+template<typename SHAPE_T, typename VECT_T, int DIR = 1>
 class FixedYEntity : public FixedEntity<SHAPE_T, VECT_T>
 {
+public:
+  void applyScale(VECT_T &velToScale) override
+  {
+    spdlog::info("collide Y with DIR {}", DIR);
+    if (velToScale.y * DIR < 0) {
+      spdlog::info("negate y vel");
+      velToScale.y *= -1;
+    }
+  }
+
+  FixedYEntity(std::shared_ptr<SHAPE_T> shape) : FixedEntity<SHAPE_T, VECT_T>(shape)
+  {
+  }
 };
 
 
