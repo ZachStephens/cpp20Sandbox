@@ -39,12 +39,12 @@ public:
     this->mPendingVelocity += momentum;
   }
 
-  virtual void applyScale(VECT_T &velToScale)
+  virtual void applyScale(VECT_T &velToScale) override
   {
     velToScale *= static_cast<float>(1);
   }
 
-  void setTexture(const sf::Texture &texture)
+  void setTexture(const sf::Texture &texture) override
   {
     // spdlog::set_level(spdlog::level::info);
     // spdlog::info("settingImage");

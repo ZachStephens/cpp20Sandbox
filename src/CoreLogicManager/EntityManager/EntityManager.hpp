@@ -16,6 +16,9 @@
 #include <random>
 namespace ent::man {
 
+constexpr uint16_t BORDER_WIDTH = 1920;
+constexpr uint16_t BORDER_HEIGHT = 1080;
+
 class EntityManager
 {
 private:
@@ -39,7 +42,7 @@ private:
 
   uint16_t mEntityId = 0;
 
-  std::shared_ptr<sf::Shape> initShape(const float size,
+  static std::shared_ptr<sf::Shape> initShape(const float size,
     const sf::Texture &texture,
     const sf::Vector2f &initPos);
 

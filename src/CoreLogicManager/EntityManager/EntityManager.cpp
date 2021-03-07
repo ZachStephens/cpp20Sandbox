@@ -72,6 +72,7 @@ uint16_t EntityManager::configureEntity(
   auto latestId = ++mEntityId;
 
   SFML_ENTITY_PTR fixedEnt = std::make_unique<SFML_ENTITY>(shape, initVel);
+  fixedEnt->updateVelocity();
 
   mEntityCollection.insert(std::pair<const gman::shapeId_t, SFML_ENTITY_PTR>(latestId, std::move(fixedEnt)));
 
@@ -82,7 +83,7 @@ uint16_t EntityManager::configureEntity(
 
 void EntityManager::configureBorder(const uint16_t width, const uint16_t height)
 {
-  uint16_t size = 1920;
+  uint16_t size = BORDER_WIDTH;
 
   // build border
   for (uint16_t pos = 0; pos < width; pos += size) {
@@ -112,12 +113,16 @@ void EntityManager::init()
 
 
   // build border
-  configureBorder(1920, 1080);
+  configureBorder(BORDER_WIDTH, BORDER_HEIGHT);
 
   uint16_t i = 0;
   const float size = 50;
-  while (i++ < 10) {
-    auto initPos = sf::Vector2f(960 + static_cast<float>(1850 * (mDistrib(mGenerator) - .5)), 540 + static_cast<float>(1000 * (mDistrib(mGenerator) - .5)));
+  const uint16_t ENT_NUM = 10;
+
+  while (i++ < ENT_NUM) {
+    const float DIST_OFFSET = .5;
+    const float RAND_VAL_OFFSET = .5;
+    auto initPos = sf::Vector2f(BORDER_WIDTH * static_cast<float>((static_cast<float>(RAND_VAL_OFFSET) + static_cast<float>((mDistrib(mGenerator)) - static_cast<float>(DIST_OFFSET)))), BORDER_HEIGHT * static_cast<float>((RAND_VAL_OFFSET + (mDistrib(mGenerator) - DIST_OFFSET))));
 
     configureEntity(1.0, size, mBisonTexture, initPos);
   }

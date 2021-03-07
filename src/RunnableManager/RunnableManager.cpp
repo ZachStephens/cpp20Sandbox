@@ -2,6 +2,6 @@
 
 #include <memory>
 
-RunnableManager::RunnableManager(std::shared_ptr<ThreadCom::ThreadCommunicator<ThreadCom::commMsg>> threadComm) : mThreadComm(threadComm)
+RunnableManager::RunnableManager(std::shared_ptr<ThreadCom::ThreadCommunicator<ThreadCom::commMsg>> threadComm) : mThreadComm(std::move(threadComm))
 {
 }

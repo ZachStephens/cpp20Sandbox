@@ -81,7 +81,7 @@ public:
 
   inline const decltype(mVelocity) getVelocity() const override { return mVelocity; };
 
-  void setTexture(const sf::Texture &texture)
+  void setTexture(const sf::Texture &texture) override
   {
     // spdlog::set_level(spdlog::level::info);
     // spdlog::info("settingImage");
@@ -165,7 +165,6 @@ public:
 
   Entity(std::shared_ptr<SHAPE_T> shape, VECT_T initVel) : mShape(shape), mPendingVelocity(initVel)
   {
-    updateVelocity();
   }
 };
 
