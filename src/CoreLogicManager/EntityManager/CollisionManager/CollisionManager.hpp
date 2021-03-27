@@ -5,6 +5,7 @@
 #include <SFML/Graphics.hpp>
 #include <concepts>
 
+
 #include <map>
 #include <set>
 
@@ -21,17 +22,6 @@ class CollisionManager
 {
 
 private:
-  float magnitude(const sf::Vector2f &vec) const
-  {
-    return static_cast<float>(std::sqrt(std::pow(vec.x, 2) + std::pow(vec.y, 2)));
-  }
-
-  sf::Vector2f unitVector(const float xComponent, const float yComponent, const float mag) const
-  {
-    return sf::Vector2f(xComponent / mag, yComponent / mag);
-  }
-
-
   template<typename ENT_T>
   void processCollision(ENT_T entity, ENT_T otherEntity)
   {

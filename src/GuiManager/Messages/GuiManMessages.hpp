@@ -26,7 +26,7 @@ public:
   // guiManRequest() {}
   guiManRequest(
     GUI_COMMAND cmd,
-    std::shared_ptr<const sf::Shape> &shape) : mCmd(cmd), mShape(shape)
+    const std::shared_ptr<const sf::Shape> &shape) : mCmd(cmd), mShape(shape)
   {
   }
 };

@@ -102,7 +102,7 @@ public:
     return boundary.intersects(otherBoundary);
   }
 
-  FixedEntity(std::shared_ptr<SHAPE_T> shape) : Entity<SHAPE_T, VECT_T>(shape, { 0.0, 0.0 })
+  explicit FixedEntity(std::shared_ptr<SHAPE_T> shape) : Entity<SHAPE_T, VECT_T>(shape, { 0.0, 0.0 })
   {
   }
 };
@@ -121,7 +121,7 @@ public:
     }
   }
 
-  FixedXEntity(std::shared_ptr<SHAPE_T> shape) : FixedEntity<SHAPE_T, VECT_T>(shape)
+  explicit FixedXEntity(std::shared_ptr<SHAPE_T> shape) : FixedEntity<SHAPE_T, VECT_T>(shape)
   {
   }
 };
@@ -140,7 +140,7 @@ public:
     }
   }
 
-  FixedYEntity(std::shared_ptr<SHAPE_T> shape) : FixedEntity<SHAPE_T, VECT_T>(shape)
+  explicit FixedYEntity(std::shared_ptr<SHAPE_T> shape) : FixedEntity<SHAPE_T, VECT_T>(shape)
   {
   }
 };

@@ -4,11 +4,12 @@
 #include <SFML/Window/Keyboard.hpp>
 #include <SFML/Graphics.hpp>
 
+#include "CollisionManager/CollisionManager.hpp"
 
 #include "GuiManager/Messages/GuiManMessages.hpp"
 #include "Entity/Entity.hpp"
 #include "Entity/FixedEntity.hpp"
-#include "CollisionManager/CollisionManager.hpp"
+
 
 #include <map>
 #include <set>
@@ -18,6 +19,8 @@ namespace ent::man {
 
 constexpr uint16_t BORDER_WIDTH = 1920;
 constexpr uint16_t BORDER_HEIGHT = 1080;
+constexpr float HALF = static_cast<float>(.5);
+
 
 class EntityManager
 {
@@ -42,6 +45,9 @@ private:
 
   uint16_t mEntityId = 0;
 
+
+  float getRandom();
+
   static std::shared_ptr<sf::Shape> initShape(const float size,
     const sf::Texture &texture,
     const sf::Vector2f &initPos);
@@ -57,8 +63,7 @@ private:
   uint16_t configureBorderEntity(
     const float size,
     const sf::Texture &texture,
-    const sf::Vector2f &initPos,
-    const bool xyDirection);
+    const sf::Vector2f &initPos);
 
   void configureBorder(const uint16_t width, const uint16_t height);
 

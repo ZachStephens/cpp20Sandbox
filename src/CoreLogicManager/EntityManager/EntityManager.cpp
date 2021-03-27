@@ -7,8 +7,10 @@
 #include "Entity/Entity.hpp"
 #include "Entity/FixedEntity.hpp"
 
+
 #include "GuiManager/Messages/GuiManMessages.hpp"
 #include "ThreadCommunicator/Messages/ThreadCommMessages.hpp"
+
 
 #include <concepts>
 #include <iostream>
@@ -33,24 +35,16 @@ template<class BORDER_T>
 uint16_t EntityManager::configureBorderEntity(
   const float size,
   const sf::Texture &texture,
-  const sf::Vector2f &initPos,
-  const bool xyDirection)
+  const sf::Vector2f &initPos)
 {
 
   auto shape = initShape(size, texture, initPos);
 
   auto latestId = ++mEntityId;
 
+  SFML_ENTITY_PTR fixedEnt = std::make_unique<BORDER_T>(shape);
+  mEntityCollection.insert(std::pair<const gman::shapeId_t, SFML_ENTITY_PTR>(latestId, std::move(fixedEnt)));
 
-  // xyDirection == true -> configure horizontal border entity (xFixedEntity)
-  // else create vertical border entity
-  if (xyDirection) {
-    SFML_ENTITY_PTR fixedEnt = std::make_unique<BORDER_T>(shape);
-    mEntityCollection.insert(std::pair<const gman::shapeId_t, SFML_ENTITY_PTR>(latestId, std::move(fixedEnt)));
-  } else {
-    SFML_ENTITY_PTR fixedEnt = std::make_unique<BORDER_T>(shape);
-    mEntityCollection.insert(std::pair<const gman::shapeId_t, SFML_ENTITY_PTR>(latestId, std::move(fixedEnt)));
-  }
 
   mStaticEntityIds.insert(latestId);
 
@@ -67,7 +61,10 @@ uint16_t EntityManager::configureEntity(
   shape->setPosition(initPos);
   shape->setTexture(&texture);
 
-  const auto initVel = sf::Vector2f(floatSpeed * static_cast<float>((mDistrib(mGenerator) - .5)), floatSpeed * static_cast<float>((mDistrib(mGenerator) - .5)));
+
+  const float XVEL_CONST = floatSpeed * (getRandom() - HALF);
+  const float YVEL_CONST = floatSpeed * (getRandom() - HALF);
+  const auto initVel = sf::Vector2f(XVEL_CONST, YVEL_CONST);
 
   auto latestId = ++mEntityId;
 
@@ -88,15 +85,20 @@ void EntityManager::configureBorder(const uint16_t width, const uint16_t height)
   // build border
   for (uint16_t pos = 0; pos < width; pos += size) {
     using namespace ent::base::fixed;
-    configureBorderEntity<FixedYEntity<sf::Shape, sf::Vector2f, 1>>(size, mDefaultTexture, sf::Vector2f(static_cast<float>(pos), -static_cast<float>(size)), false);//top
-    configureBorderEntity<FixedYEntity<sf::Shape, sf::Vector2f, -1>>(size, mDefaultTexture, sf::Vector2f(static_cast<float>(pos), height), false);//bottom
+    configureBorderEntity<FixedYEntity<sf::Shape, sf::Vector2f, 1>>(size, mDefaultTexture, sf::Vector2f(static_cast<float>(pos), -static_cast<float>(size)));//top
+    configureBorderEntity<FixedYEntity<sf::Shape, sf::Vector2f, -1>>(size, mDefaultTexture, sf::Vector2f(static_cast<float>(pos), height));//bottom
   }
 
   for (uint16_t pos = 0; pos < height; pos += size) {
     using namespace ent::base::fixed;
-    configureBorderEntity<FixedXEntity<sf::Shape, sf::Vector2f, 1>>(size, mDefaultTexture, sf::Vector2f(-static_cast<float>(size), static_cast<float>(pos)), true);//left
-    configureBorderEntity<FixedXEntity<sf::Shape, sf::Vector2f, -1>>(size, mDefaultTexture, sf::Vector2f(width, static_cast<float>(pos)), true);//right
+    configureBorderEntity<FixedXEntity<sf::Shape, sf::Vector2f, 1>>(size, mDefaultTexture, sf::Vector2f(-static_cast<float>(size), static_cast<float>(pos)));//left
+    configureBorderEntity<FixedXEntity<sf::Shape, sf::Vector2f, -1>>(size, mDefaultTexture, sf::Vector2f(width, static_cast<float>(pos)));//right
   }
+}
+
+float EntityManager::getRandom()
+{
+  return static_cast<float>(mDistrib(mGenerator));
 }
 
 void EntityManager::init()
@@ -120,15 +122,19 @@ void EntityManager::init()
   const uint16_t ENT_NUM = 10;
 
   while (i++ < ENT_NUM) {
-    const float DIST_OFFSET = .5;
-    const float RAND_VAL_OFFSET = .5;
-    auto initPos = sf::Vector2f(BORDER_WIDTH * static_cast<float>((static_cast<float>(RAND_VAL_OFFSET) + static_cast<float>((mDistrib(mGenerator)) - static_cast<float>(DIST_OFFSET)))), BORDER_HEIGHT * static_cast<float>((RAND_VAL_OFFSET + (mDistrib(mGenerator) - DIST_OFFSET))));
+    const float DIST_OFFSET = HALF;
+    const float RAND_VAL_OFFSET = HALF;
+
+    const auto MY_WIDTH_CONST = RAND_VAL_OFFSET + getRandom() - DIST_OFFSET;
+    const auto MY_HEIGHT_CONST = RAND_VAL_OFFSET + getRandom() - DIST_OFFSET;
+
+    auto initPos = sf::Vector2f(BORDER_WIDTH * MY_WIDTH_CONST, BORDER_HEIGHT * MY_HEIGHT_CONST);
 
     configureEntity(1.0, size, mBisonTexture, initPos);
   }
 }
 
-EntityManager::EntityManager()
+EntityManager::EntityManager()// NOLINT
 {
   init();
 }
@@ -177,9 +183,11 @@ void EntityManager::update()
 
   col::collision_map_t<gman::shapeId_t> collisionRecord;
 
+  const auto DELTA_VEL_FACTOR = static_cast<float>(.999);
+
   for (const auto &id : mDynamicEntityIds) {
     auto &entity = mEntityCollection[id];
-    entity->mPendingVelocity *= static_cast<float>(.999);
+    entity->mPendingVelocity *= DELTA_VEL_FACTOR;
     //mapEntry.second->mPendingVelocity.y += static_cast<float>(1);
     mCollisionManager.findCollisions(id, collisionRecord, mEntityCollection);
   }

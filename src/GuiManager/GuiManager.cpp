@@ -22,10 +22,10 @@ namespace gman {
 
 
 GuiManager::GuiManager(std::shared_ptr<ThreadCom::ThreadCommunicator<ThreadCom::commMsg>> threadComm,
-  std::shared_ptr<ThreadCom::ThreadCommunicator<gman::guiManRequest>> guiManRequestComm) : RunnableManager(threadComm), mGuiRequester(guiManRequestComm)
+  std::shared_ptr<ThreadCom::ThreadCommunicator<gman::guiManRequest>> guiManRequestComm) : RunnableManager(std::move(threadComm)), mGuiRequester(std::move(guiManRequestComm))
 {
-
-  this->mWindow.setFramerateLimit(90);
+  const auto FRAME_RATE_LIMIT = 90;
+  this->mWindow.setFramerateLimit(FRAME_RATE_LIMIT);
   ImGui::SFML::Init(this->mWindow);
 
   this->mWindow.setActive(false);
@@ -47,14 +47,8 @@ GuiManager::GuiManager(std::shared_ptr<ThreadCom::ThreadCommunicator<ThreadCom::
   mBackground.setScale(ScaleX, ScaleY);//Set scale.
 
 
-  mServiceId = mThreadComm->registerHandler(std::bind(&GuiManager::commMsgHandler, this, std::placeholders::_1));
-  mGuiRequestHandlerId = mGuiRequester->registerHandler(std::bind(&GuiManager::processGuiManRequest, this, std::placeholders::_1));
-}
-
-
-void GuiManager::commMsgHandler(std::unique_ptr<ThreadCom::commMsg> msg)
-{
-  msg.get();
+  mServiceId = mThreadComm->registerHandler(this->commMsgHandler);
+  mGuiRequestHandlerId = mGuiRequester->registerHandler(this->guiRequestMsgHandler);
 }
 
 
@@ -170,7 +164,7 @@ void GuiManager::run()
 
   while (mWindow.isOpen()) {
     spdlog::set_level(spdlog::level::debug);
-    sf::Event event;
+    sf::Event event{};
     while (mWindow.pollEvent(event)) {
       ImGui::SFML::ProcessEvent(event);
 
@@ -178,10 +172,10 @@ void GuiManager::run()
         mWindow.close();
       }
       if (event.type == sf::Event::KeyPressed) {
-        onKeyPressed(event.key.code);
+        onKeyPressed(event.key.code);//NOLINT
       }
       if (event.type == sf::Event::KeyReleased) {
-        onKeyReleased(event.key.code);
+        onKeyReleased(event.key.code);//NOLINT
       }
     }
 

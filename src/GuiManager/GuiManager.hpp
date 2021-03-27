@@ -31,7 +31,7 @@ private:
   std::unique_ptr<std::vector<guiManRequest>> mRequestVecPending = std::make_unique<std::vector<guiManRequest>>(std::vector<guiManRequest>());
 
   std::shared_ptr<ThreadCom::ThreadCommunicator<guiManRequest>> mGuiRequester;
-  ThreadCom::serviceId_t mGuiRequestHandlerId;
+  ThreadCom::serviceId_t mGuiRequestHandlerId = 0;
 
 
   sf::Texture mBackgroundTexture;
@@ -47,7 +47,7 @@ private:
 
   //Event Handlers
   // When a key is pressed
-  void onKeyPressed(const sf::Keyboard::Key code);
+  void onKeyPressed(const sf::Keyboard::Key key);
   // When a key is released
   void onKeyReleased(const sf::Keyboard::Key key);
 
@@ -55,9 +55,18 @@ private:
 
   //ThreadCom::commHandler_t mHandler;
 
-  void commMsgHandler(std::unique_ptr<ThreadCom::commMsg> msg);
 
-  void guiRequestMsgHandler(std::unique_ptr<guiManRequest> msg);
+  std::function<void(std::unique_ptr<ThreadCom::commMsg>)> commMsgHandler = [this](std::unique_ptr<ThreadCom::commMsg> msg) {
+    msg.get();
+  };
+
+  std::function<void(std::unique_ptr<guiManRequest>)> guiRequestMsgHandler = [this](std::unique_ptr<guiManRequest> msg) {
+    // this->mRequestQueue.push_back(std::move(msg));
+    // mRequestQueue.push_back(std::move(msg));
+    auto shapeToDraw = msg->mShape;
+    this->mWindow.draw(*shapeToDraw);
+  };
+
 
   //commHandler_t mHandler;
 
