@@ -60,19 +60,19 @@ GuiManager::GuiManager(std::shared_ptr<ThreadCom::ThreadCommunicator<ThreadCom::
 // }
 
 
-void GuiManager::processGuiManRequest(std::unique_ptr<std::vector<guiManRequest>> requestVec)
-{
-  spdlog::set_level(spdlog::level::info);
-  spdlog::debug("processGuiManRequest start");
-  if (requestVec) {
-    mRequestVecPending.swap(requestVec);
-  } else {
-    mRequestVecPending->clear();
-  }
+// void GuiManager::processGuiManRequest(std::unique_ptr<std::vector<guiManRequest>> requestVec)
+// {
+//   spdlog::set_level(spdlog::level::info);
+//   spdlog::debug("processGuiManRequest start");
+//   if (requestVec) {
+//     mRequestVecPending.swap(requestVec);
+//   } else {
+//     mRequestVecPending->clear();
+//   }
 
-  spdlog::debug("processGuiManRequest requestVec Moved");
-  spdlog::set_level(spdlog::level::info);
-}
+//   spdlog::debug("processGuiManRequest requestVec Moved");
+//   spdlog::set_level(spdlog::level::info);
+// }
 
 void GuiManager::update()
 {
@@ -106,10 +106,10 @@ void GuiManager::update()
   //   processGuiManRequest(std::move(mRequestQueue.front()));
   //   mRequestVec.pop_front();
   // }
-  // auto concatted = std::string("Hello, world!, ");
-  // ImGui::Begin(concatted.c_str());
-  // ImGui::Button("Look at this pretty button");
-  // ImGui::End();
+  auto concatted = std::string("Hello, world!, ");
+  ImGui::Begin(concatted.c_str());
+  ImGui::Button("Look at this pretty button");
+  ImGui::End();
 
   // mWindow.clear();
 }

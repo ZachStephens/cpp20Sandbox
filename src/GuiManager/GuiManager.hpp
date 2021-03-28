@@ -31,7 +31,7 @@ private:
   std::unique_ptr<std::vector<guiManRequest>> mRequestVecPending = std::make_unique<std::vector<guiManRequest>>(std::vector<guiManRequest>());
 
   std::shared_ptr<ThreadCom::ThreadCommunicator<guiManRequest>> mGuiRequester;
-  ThreadCom::serviceId_t mGuiRequestHandlerId = 0;
+  ThreadCom::serviceId_t mGuiRequestHandlerId = 1;
 
 
   sf::Texture mBackgroundTexture;
@@ -40,7 +40,7 @@ private:
 
   sf::RenderWindow mWindow = sf::RenderWindow(sf::VideoMode(1920, 1080), "Test IMGUI Project");
 
-  void processGuiManRequest(std::unique_ptr<std::vector<guiManRequest>> requestVec);
+  // void processGuiManRequest(std::unique_ptr<std::vector<guiManRequest>> requestVec);
 
 
   void updateShape(const shapeId_t shapeId, const sf::Vector2f &requestedPos, const sf::Color requestedColor);
@@ -60,11 +60,17 @@ private:
     msg.get();
   };
 
-  std::function<void(std::unique_ptr<guiManRequest>)> guiRequestMsgHandler = [this](std::unique_ptr<guiManRequest> msg) {
-    // this->mRequestQueue.push_back(std::move(msg));
-    // mRequestQueue.push_back(std::move(msg));
-    auto shapeToDraw = msg->mShape;
-    this->mWindow.draw(*shapeToDraw);
+  std::function<void(std::unique_ptr<std::vector<guiManRequest>>)> guiRequestMsgHandler = [this](std::unique_ptr<std::vector<guiManRequest>> requestVec) {
+    spdlog::set_level(spdlog::level::info);
+    spdlog::debug("processGuiManRequest start");
+    if (requestVec) {
+      mRequestVecPending.swap(requestVec);
+    } else {
+      mRequestVecPending->clear();
+    }
+
+    spdlog::debug("processGuiManRequest requestVec Moved");
+    spdlog::set_level(spdlog::level::info);
   };
 
 
