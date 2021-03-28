@@ -22,7 +22,7 @@ public:
   {
   }
 
-  const std::vector<uint8_t> &getBytes() { return mBytes; };
+  const std::vector<uint8_t> &getBytes() const { return mBytes; };
 
 protected:
   std::vector<uint8_t> mBytes;

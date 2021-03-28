@@ -31,7 +31,7 @@ private:
   std::unique_ptr<std::vector<guiManRequest>> mRequestVecPending = std::make_unique<std::vector<guiManRequest>>(std::vector<guiManRequest>());
 
   std::shared_ptr<ThreadCom::ThreadCommunicator<guiManRequest>> mGuiRequester;
-  ThreadCom::serviceId_t mGuiRequestHandlerId;
+  ThreadCom::serviceId_t mGuiRequestHandlerId = 1;
 
 
   sf::Texture mBackgroundTexture;
@@ -40,14 +40,14 @@ private:
 
   sf::RenderWindow mWindow = sf::RenderWindow(sf::VideoMode(1920, 1080), "Test IMGUI Project");
 
-  void processGuiManRequest(std::unique_ptr<std::vector<guiManRequest>> requestVec);
+  // void processGuiManRequest(std::unique_ptr<std::vector<guiManRequest>> requestVec);
 
 
   void updateShape(const shapeId_t shapeId, const sf::Vector2f &requestedPos, const sf::Color requestedColor);
 
   //Event Handlers
   // When a key is pressed
-  void onKeyPressed(const sf::Keyboard::Key code);
+  void onKeyPressed(const sf::Keyboard::Key key);
   // When a key is released
   void onKeyReleased(const sf::Keyboard::Key key);
 
@@ -55,9 +55,24 @@ private:
 
   //ThreadCom::commHandler_t mHandler;
 
-  void commMsgHandler(std::unique_ptr<ThreadCom::commMsg> msg);
 
-  void guiRequestMsgHandler(std::unique_ptr<guiManRequest> msg);
+  std::function<void(std::unique_ptr<ThreadCom::commMsg>)> commMsgHandler = [this](std::unique_ptr<ThreadCom::commMsg> msg) {
+    msg.get();
+  };
+
+  std::function<void(std::unique_ptr<std::vector<guiManRequest>>)> guiRequestMsgHandler = [this](std::unique_ptr<std::vector<guiManRequest>> requestVec) {
+    spdlog::set_level(spdlog::level::info);
+    spdlog::debug("processGuiManRequest start");
+    if (requestVec) {
+      mRequestVecPending.swap(requestVec);
+    } else {
+      mRequestVecPending->clear();
+    }
+
+    spdlog::debug("processGuiManRequest requestVec Moved");
+    spdlog::set_level(spdlog::level::info);
+  };
+
 
   //commHandler_t mHandler;
 

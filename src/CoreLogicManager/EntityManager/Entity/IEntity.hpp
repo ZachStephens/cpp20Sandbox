@@ -16,6 +16,14 @@ template<typename SHAPE_T, typename VECT_T>
 class IEntity
 {
 public:
+  virtual const sf::FloatRect &getTopBounds() const = 0;
+
+  virtual const sf::FloatRect &getBottomBounds() const = 0;
+
+  virtual const sf::FloatRect &getLeftBounds() const = 0;
+
+  virtual const sf::FloatRect &getRightBounds() const = 0;
+
   virtual inline const std::shared_ptr<SHAPE_T> getShape() const = 0;
 
   virtual const VECT_T getCenterPosition() const = 0;
@@ -30,7 +38,7 @@ public:
 
   virtual void processVelocityMessage(bool downPress, const sf::Keyboard::Key &key) = 0;
 
-  virtual bool intersects(const IEntity<SHAPE_T, VECT_T> &otherEntity) const = 0;
+  virtual bool intersects(const sf::FloatRect &otherBoundary) const = 0;
 
   virtual ~IEntity(){};
 };

@@ -22,17 +22,21 @@ namespace clman {
 class CoreLogicManager : public RunnableManager
 {
 private:
-  ThreadCom::serviceId_t mServiceId;
-  ThreadCom::serviceId_t mGuiManagerId;
+  ThreadCom::serviceId_t mServiceId = 1;
+  ThreadCom::serviceId_t mGuiManagerId = 1;
 
   std::shared_ptr<ThreadCom::ThreadCommunicator<gman::guiManRequest>> mGuiRequester;
 
   ent::man::EntityManager mEntityManager;
 
 
-  void readMessages(const std::unique_ptr<ThreadCom::commMsg> &&msg);
+  void readMessages(const std::unique_ptr<ThreadCom::commMsg> &msg);
 
-  void coreLogicHandler(std::unique_ptr<ThreadCom::commMsg> msg);
+
+  std::function<void(std::unique_ptr<ThreadCom::commMsg>)> coreLogicHandler = [this](std::unique_ptr<ThreadCom::commMsg> msg) {
+    this->mRequestQueue.push_back(std::move(msg));
+  };
+  // void coreLogicHandler(std::unique_ptr<ThreadCom::commMsg> msg);
 
   void waitForDependencies();
 

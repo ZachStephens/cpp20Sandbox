@@ -9,6 +9,7 @@
 
 #include <SFML/Graphics.hpp>
 
+#include <spdlog/spdlog.h>
 
 #include "GuiManager/Messages/GuiManMessages.hpp"
 
@@ -21,13 +22,9 @@ namespace ent::base::fixed {
 template<typename SHAPE_T, typename VECT_T>
 class FixedEntity : public Entity<SHAPE_T, VECT_T>
 {
+private:
 public:
   inline const std::shared_ptr<SHAPE_T> getShape() const override { return this->mShape; };
-
-
-  void autoInit()
-  {
-  }
 
   const VECT_T getCenterPosition() const override
   {
@@ -37,7 +34,17 @@ public:
 
   inline const VECT_T getVelocity() const override { return VECT_T(0.0, 0.0); };
 
-  void setTexture(const sf::Texture &texture)
+  virtual void applyMomentum(const VECT_T momentum) override
+  {
+    this->mPendingVelocity += momentum;
+  }
+
+  virtual void applyScale(VECT_T &velToScale) override
+  {
+    velToScale *= static_cast<float>(1);
+  }
+
+  void setTexture(const sf::Texture &texture) override
   {
     // spdlog::set_level(spdlog::level::info);
     // spdlog::info("settingImage");
@@ -88,17 +95,53 @@ public:
     spdlog::set_level(spdlog::level::info);
   }
 
-  bool intersects(const IEntity<SHAPE_T, VECT_T> &otherFixedEntity) const override
+  bool intersects(const sf::FloatRect &otherBoundary) const override
   {
     const auto boundary = this->mShape->getGlobalBounds();
-    const auto otherBoundary = otherFixedEntity.getShape()->getGlobalBounds();
 
     return boundary.intersects(otherBoundary);
   }
 
-  FixedEntity(std::shared_ptr<SHAPE_T> shape) : Entity<SHAPE_T, VECT_T>(shape, { 0.0, 0.0 })
+  explicit FixedEntity(std::shared_ptr<SHAPE_T> shape) : Entity<SHAPE_T, VECT_T>(shape, { 0.0, 0.0 })
   {
-    this->mFixed = true;
+  }
+};
+
+// 1 = left; -1 = right
+template<typename SHAPE_T, typename VECT_T, int DIR = 1>
+class FixedXEntity : public FixedEntity<SHAPE_T, VECT_T>
+{
+public:
+  void applyScale(VECT_T &velToScale) override
+  {
+    spdlog::info("collide X with DIR {}", DIR);
+    if (velToScale.x * DIR < 0) {
+      spdlog::info("negate x vel");
+      velToScale.x *= -1;
+    }
+  }
+
+  explicit FixedXEntity(std::shared_ptr<SHAPE_T> shape) : FixedEntity<SHAPE_T, VECT_T>(shape)
+  {
+  }
+};
+
+// 1 = top; -1 = bottom
+template<typename SHAPE_T, typename VECT_T, int DIR = 1>
+class FixedYEntity : public FixedEntity<SHAPE_T, VECT_T>
+{
+public:
+  void applyScale(VECT_T &velToScale) override
+  {
+    spdlog::info("collide Y with DIR {}", DIR);
+    if (velToScale.y * DIR < 0) {
+      spdlog::info("negate y vel");
+      velToScale.y *= -1;
+    }
+  }
+
+  explicit FixedYEntity(std::shared_ptr<SHAPE_T> shape) : FixedEntity<SHAPE_T, VECT_T>(shape)
+  {
   }
 };
 
