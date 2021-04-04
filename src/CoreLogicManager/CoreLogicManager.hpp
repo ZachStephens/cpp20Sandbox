@@ -6,7 +6,6 @@
 #include <map>
 
 #include <spdlog/spdlog.h>
-#include <docopt/docopt.h>
 
 #include "RunnableManager/RunnableManager.hpp"
 #include "ThreadCommunicator/Messages/ThreadCommMessages.hpp"

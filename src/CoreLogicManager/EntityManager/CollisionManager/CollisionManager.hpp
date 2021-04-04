@@ -8,7 +8,8 @@
 
 #include <map>
 #include <set>
-
+#include <numeric>
+#include <cmath>
 
 namespace col {
 
@@ -26,11 +27,21 @@ private:
   void processCollision(ENT_T entity, ENT_T otherEntity)
   {
 
-    auto otherEntVelocity = otherEntity.getVelocity();
-    const auto otherEntMass = otherEntity.getMass();
+    auto vectorTo = otherEntity.getCenterPosition() - entity.getCenterPosition();
+    spdlog::debug("collision: {}, {}", vectorTo.x, vectorTo.y);
 
-    otherEntity.applyScale(entity.mPendingVelocity);
-    entity.applyMomentum(otherEntMass * otherEntVelocity);
+    auto mag = static_cast<float>(std::sqrt(std::pow(vectorTo.x, 2) + std::pow(vectorTo.y, 2)));
+    spdlog::debug("Mag: {}", mag);
+
+
+    auto force = static_cast<float>(200 / std::pow(mag, 2));
+
+
+    // auto otherEntVelocity = otherEntity.getVelocity();
+    // const auto otherEntMass = otherEntity.getMass();
+
+    otherEntity.applyScale(entity);
+    entity.applyMomentum((vectorTo * -force) / mag);
   }
 
 public:

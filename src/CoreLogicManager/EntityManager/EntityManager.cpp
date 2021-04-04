@@ -118,8 +118,9 @@ void EntityManager::init()
   configureBorder(BORDER_WIDTH, BORDER_HEIGHT);
 
   uint16_t i = 0;
-  const float size = 50;
-  const uint16_t ENT_NUM = 10;
+  const float SIZE_INIT = 15;
+  const float FLOAT_SPEED_INIT = 2;
+  const uint16_t ENT_NUM = 600;
 
   while (i++ < ENT_NUM) {
     const float DIST_OFFSET = HALF;
@@ -130,7 +131,7 @@ void EntityManager::init()
 
     auto initPos = sf::Vector2f(BORDER_WIDTH * MY_WIDTH_CONST, BORDER_HEIGHT * MY_HEIGHT_CONST);
 
-    configureEntity(1.0, size, mBisonTexture, initPos);
+    configureEntity(FLOAT_SPEED_INIT, SIZE_INIT, mBisonTexture, initPos);
   }
 }
 

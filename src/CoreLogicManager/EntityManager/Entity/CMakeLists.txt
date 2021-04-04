@@ -8,7 +8,6 @@ target_include_directories(Entity INTERFACE ${CMAKE_CURRENT_SOURCE_DIR} ${SRC_RO
 target_link_libraries(Entity
     INTERFACE  project_warnings 
             project_options 
-            CONAN_PKG::docopt.cpp
             CONAN_PKG::fmt
             CONAN_PKG::spdlog
             CONAN_PKG::imgui-sfml

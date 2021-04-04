@@ -58,6 +58,5 @@ target_link_libraries(
           project_warnings
           GuiManager
           CoreLogicManager
-          CONAN_PKG::docopt.cpp
           CONAN_PKG::fmt
           CONAN_PKG::spdlog)

@@ -63,14 +63,26 @@ public:
 
   virtual void applyMomentum(const VECT_T momentum)
   {
-    auto currentMomentum = mVelocity * mMass;
-    auto totalMomentum = momentum + currentMomentum;
-    mPendingVelocity += totalMomentum / mMass;
+    // auto currentMomentum = mVelocity * mMass;
+    // auto totalMomentum = momentum + currentMomentum;
+    mPendingVelocity += momentum / mMass;
   }
 
-  virtual void applyScale(VECT_T &velToScale)
+  virtual void applyScale(Entity<SHAPE_T, VECT_T> &entityToScale)
   {
-    velToScale *= static_cast<float>(1);
+    // only runs if this has collided with entityToScale
+    // manipulates enityToScale given this
+
+
+    auto &otherVel = entityToScale.mVelocity;
+
+    if (otherVel.x > 0 && mVelocity.x < 0)
+      otherVel.x *= -1;
+
+    if (otherVel.y > 0 && mVelocity.y < 0)
+      otherVel.y *= -1;
+
+    otherVel *= static_cast<float>(1);
   }
 
   const VECT_T getCenterPosition() const override
@@ -122,6 +134,24 @@ public:
 
   void updateVelocity() override
   {
+    const decltype(mPendingVelocity.x) MAX_X_VEL = 15;
+    const decltype(mPendingVelocity.y) MIN_X_VEL = -15;
+    const decltype(mPendingVelocity.x) MAX_Y_VEL = 15;
+    const decltype(mPendingVelocity.y) MIN_Y_VEL = -15;
+
+    if (mPendingVelocity.x > MAX_X_VEL)
+      mPendingVelocity.x = MAX_X_VEL;
+
+    if (mPendingVelocity.y > MAX_Y_VEL)
+      mPendingVelocity.y = MAX_Y_VEL;
+
+    if (mPendingVelocity.x < MIN_X_VEL)
+      mPendingVelocity.x = MIN_X_VEL;
+
+    if (mPendingVelocity.y < MIN_Y_VEL)
+      mPendingVelocity.y = MIN_Y_VEL;
+
+
     mVelocity = mPendingVelocity;// *= static_cast<float>(.995);
   }
 

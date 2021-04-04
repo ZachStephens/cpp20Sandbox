@@ -39,9 +39,9 @@ public:
     this->mPendingVelocity += momentum;
   }
 
-  virtual void applyScale(VECT_T &velToScale) override
+  virtual void applyScale(Entity<SHAPE_T, VECT_T> &entityToScale) override
   {
-    velToScale *= static_cast<float>(1);
+    entityToScale.mVelocity *= static_cast<float>(1);
   }
 
   void setTexture(const sf::Texture &texture) override
@@ -112,12 +112,12 @@ template<typename SHAPE_T, typename VECT_T, int DIR = 1>
 class FixedXEntity : public FixedEntity<SHAPE_T, VECT_T>
 {
 public:
-  void applyScale(VECT_T &velToScale) override
+  void applyScale(Entity<SHAPE_T, VECT_T> &entityToScale) override
   {
     spdlog::info("collide X with DIR {}", DIR);
-    if (velToScale.x * DIR < 0) {
+    if (entityToScale.mVelocity.x * DIR < 0) {
       spdlog::info("negate x vel");
-      velToScale.x *= -1;
+      entityToScale.mPendingVelocity.x *= -1;
     }
   }
 
@@ -131,12 +131,12 @@ template<typename SHAPE_T, typename VECT_T, int DIR = 1>
 class FixedYEntity : public FixedEntity<SHAPE_T, VECT_T>
 {
 public:
-  void applyScale(VECT_T &velToScale) override
+  void applyScale(Entity<SHAPE_T, VECT_T> &entityToScale) override
   {
     spdlog::info("collide Y with DIR {}", DIR);
-    if (velToScale.y * DIR < 0) {
+    if (entityToScale.mVelocity.y * DIR < 0) {
       spdlog::info("negate y vel");
-      velToScale.y *= -1;
+      entityToScale.mPendingVelocity.y *= -1;
     }
   }
 

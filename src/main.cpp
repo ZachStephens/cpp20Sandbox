@@ -1,8 +1,9 @@
 #include <functional>
 #include <iostream>
 
+
 #include <spdlog/spdlog.h>
-#include <docopt/docopt.h>
+// #include <docopt/docopt.h>
 
 
 #include "GuiManager/GuiManager.hpp"
@@ -14,9 +15,15 @@
 #include <memory>
 #include <functional>
 
+// Note! this defines a macro that clashes with sfml and docopt.  This should be included after those headers
+#include <X11/Xlib.h>
 
 int main()
 {
+  {
+    XInitThreads();
+  }
+
   //Use the default logger (stdout, multi-threaded, colored)
 
 

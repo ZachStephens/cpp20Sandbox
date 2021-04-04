@@ -11,7 +11,6 @@ target_link_libraries(CoreLogicManager
     PUBLIC  EntityManager
             project_warnings 
             project_options 
-            CONAN_PKG::docopt.cpp
             CONAN_PKG::fmt
             CONAN_PKG::spdlog
             CONAN_PKG::imgui-sfml
